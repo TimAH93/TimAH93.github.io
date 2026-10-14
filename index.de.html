@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tim Aßmann – Data-Analytics-Portfolio</title>
+  <meta name="description" content="Data-Analytics-Portfolio von Tim Aßmann: Projekte mit SQL, Tableau und Python.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f1115;
+      --surface: #171a21;
+      --border: #262a33;
+      --text: #e6e8ec;
+      --muted: #9aa1ad;
+      --accent: #7aa2f7;
+      --status-bg: #2a2416;
+      --status-text: #e0b860;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { color-scheme: dark; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 72px 20px 48px;
+    }
+
+    header { margin-bottom: 56px; }
+
+    .lang {
+      text-align: right;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+
+    h1 {
+      font-size: clamp(1.9rem, 5vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin: 0 0 16px;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 1.1rem;
+      margin: 0;
+      max-width: 60ch;
+    }
+
+    section { margin-bottom: 48px; }
+
+    h2 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin: 0 0 16px;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 14px 16px;
+      vertical-align: top;
+    }
+
+    th {
+      font-weight: 500;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td.project { font-weight: 600; white-space: nowrap; }
+    td .source { display: block; color: var(--muted); font-size: 0.85rem; }
+
+    .status {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: var(--status-bg);
+      color: var(--status-text);
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .status.done {
+      background: #16291f;
+      color: #7fcf9a;
+    }
+
+    ul.skills {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    ul.skills li {
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      font-size: 0.9rem;
+    }
+
+    footer {
+      color: var(--muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav class="lang"><a href="index.html" hreflang="en" lang="en">English</a> · <strong>Deutsch</strong></nav>
+    <header>
+      <h1>Tim Aßmann</h1>
+      <p class="lead">Psychologe in der Weiterbildung Data Analytics &amp; AI, mit Schwerpunkt darauf, Daten verständlich zu präsentieren und zu visualisieren – mit Tableau, SQL und Python. Dieses Portfolio sammelt meine Projekte.</p>
+    </header>
+
+    <section>
+      <h2>Projekte</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Projekt</th><th>Frage</th><th>Tools</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="project"><a href="https://github.com/TimAH93/TimAH93.github.io/blob/main/projects/magist-eniac/README.de.md">Eniac &amp; Magist</a></td>
+              <td>Ist ein brasilianischer Marktplatz der richtige Partner für einen Premium-Tech-Händler?<span class="source">Gruppenprojekt · Magist-Datenbank auf Basis von Olist</span></td>
+              <td>SQL, Tableau</td>
+              <td><span class="status done">Abgeschlossen</span></td>
+            </tr>
+            <tr>
+              <td class="project"><a href="https://github.com/TimAH93/TimAH93.github.io/blob/main/projects/delivery-loyalty/README.de.md">Delivery &amp; Loyalty</a></td>
+              <td>Kosten verspätete Lieferungen Kundentreue?<span class="source">Olist Brazilian E-Commerce Dataset</span></td>
+              <td>SQL, Tableau</td>
+              <td><span class="status">In Arbeit</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Skills</h2>
+      <ul class="skills">
+        <li>SQL (MySQL)</li>
+        <li>Tableau</li>
+        <li>Python (pandas)</li>
+        <li>Google Sheets</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Kontakt</h2>
+      <p>GitHub: <a href="https://github.com/TimAH93">TimAH93</a></p>
+    </section>
+
+    <footer>
+      Datenquellen und Lizenzen sind auf jeder Projektseite angegeben.
+    </footer>
+  </main>
+</body>
+</html>

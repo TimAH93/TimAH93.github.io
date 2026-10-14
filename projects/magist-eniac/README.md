@@ -1,5 +1,7 @@
 # Should Eniac Enter Brazil via Magist?
 
+**English** · [Deutsch](README.de.md)
+
 **Recommendation: Enter Brazil, but not through Magist.** Magist delivers fast and reliably only in a few south-eastern states, and its tech business is small and low-priced compared with Eniac's premium Apple accessories.
 
 **Type:** Group project (team of three), Data Analytics & AI training at WBS
@@ -101,4 +103,4 @@ Team: Julia, Matías and Tim
 
 ### Open Question
 
-Whether late deliveries actually lead to worse reviews and fewer repeat customers was left open in this project. I follow it up in my own project [Delivery & Loyalty](../delivery-loyalty/).
+Whether late deliveries actually lead to worse reviews and fewer repeat customers was left open in this project. I follow it up in my own project [Delivery & Loyalty](../delivery-loyalty/README.md).
