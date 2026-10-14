@@ -1,10 +1,14 @@
 # Delivery & Loyalty
 
-**Question:** Do late deliveries cost customer loyalty?
+**Do late deliveries cost customer loyalty?**
+
+Main finding: to be added once the analysis is complete.
 
 **Status:** In progress
 
-**Tools:** SQL (MySQL), Tableau
+## Question
+
+To be added.
 
 ## Data
 
@@ -17,5 +21,30 @@ License: [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). 
 To be added.
 
 ## Findings
+
+To be added.
+
+## Recommendation
+
+To be added.
+
+## Tools
+
+- SQL (MySQL)
+- Tableau
+
+---
+
+## Reflection
+
+### Key Learnings
+
+To be added.
+
+### Challenges
+
+To be added.
+
+### Additional Reflections
 
 To be added.

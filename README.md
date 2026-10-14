@@ -19,4 +19,4 @@ Website: https://timah93.github.io
 
 ## Contact
 
-- LinkedIn: [add link]
+- GitHub: [TimAH93](https://github.com/TimAH93)
