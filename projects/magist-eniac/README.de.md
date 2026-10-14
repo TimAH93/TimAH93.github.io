@@ -62,6 +62,7 @@ Team: Julia, Matías und Tim
 
 - [`presentation/Team_Jaguar_Magist.pdf`](presentation/Team_Jaguar_Magist.pdf): Abschlusspräsentation (Deutsch)
 - [`sql/`](sql/): alle SQL-Queries des Teams, nach Frage nummeriert; die Autorin bzw. der Autor steht in jeder Datei (meine: [`01_tech_categories.sql`](sql/01_tech_categories.sql))
+- [`data/magist_csvs.zip`](data/magist_csvs.zip): die Magist-Tabellen als CSV-Dateien (Kunden, Geodaten, Bestellungen, Bestellpositionen, Zahlungen, Bewertungen, Produkte, Produktkategorien, Verkäufer; ca. 26 MB als ZIP)
 
 ## Daten und Quellen
 
