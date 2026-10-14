@@ -61,7 +61,7 @@ Team: Julia, Matías and Tim
 ## Files
 
 - [`presentation/Team_Jaguar_Magist.pdf`](presentation/Team_Jaguar_Magist.pdf): final presentation (German)
-- [`sql/01_tech_categories.sql`](sql/01_tech_categories.sql): my query for the product categories
+- [`sql/`](sql/): all SQL queries of the team, numbered by question; the author is named in each file (mine: [`01_tech_categories.sql`](sql/01_tech_categories.sql))
 
 ## Data and Sources
 

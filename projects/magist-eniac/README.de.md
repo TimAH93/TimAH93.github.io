@@ -61,7 +61,7 @@ Team: Julia, Matías und Tim
 ## Dateien
 
 - [`presentation/Team_Jaguar_Magist.pdf`](presentation/Team_Jaguar_Magist.pdf): Abschlusspräsentation (Deutsch)
-- [`sql/01_tech_categories.sql`](sql/01_tech_categories.sql): meine Query zu den Produktkategorien
+- [`sql/`](sql/): alle SQL-Queries des Teams, nach Frage nummeriert; die Autorin bzw. der Autor steht in jeder Datei (meine: [`01_tech_categories.sql`](sql/01_tech_categories.sql))
 
 ## Daten und Quellen
 
