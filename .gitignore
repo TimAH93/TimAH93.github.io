@@ -218,3 +218,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Portfolio: local-only data and OS files
+kurs-daten/
+data/raw/
+.env
+Thumbs.db
+.DS_Store
