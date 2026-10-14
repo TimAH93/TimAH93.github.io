@@ -94,12 +94,20 @@ Team: Julia, Matías und Tim
 - **Daten brauchen Kontext.** Die Zahlen zeigten, dass Magist kaum teure Technik verkauft. Die Marktrecherche erklärte, warum: In Brasilien sind Premium-Apple-Produkte Luxusgüter mit kleiner Zielgruppe.
 - **Mein Psychologie-Hintergrund hilft.** Forschung zum Statusstreben lieferte eine plausible Erklärung für die Apple-Nachfrage in Brasilien und machte die Geschichte für ein nicht-technisches Publikum leichter nachvollziehbar.
 - **Eine Empfehlung braucht eine klare Antwort.** Entscheider wollen Ja, Nein oder Ja unter Bedingungen, gestützt auf zwei oder drei starke Punkte, nicht jedes Query-Ergebnis.
+- **Unterschiedliche Arbeitsweisen können sich ergänzen.** Wir sind Aufgaben recht unterschiedlich angegangen, aber alle konnten ihre Stärken einbringen, und gemeinsam ist eine Präsentation entstanden, die keiner von uns allein so gemacht hätte.
 
 ### Herausforderungen
 
+- **Arbeiten im Team.** Bisher habe ich meist eigenständig gearbeitet. Mir war wichtig, meinem Team respektvoll zu begegnen und Raum für die Beiträge der anderen zu lassen. Eine klare Struktur von Anfang an hat mir geholfen, mich auf meine Aufgaben zu konzentrieren und den anderen bei ihren zu vertrauen.
 - **Einheitliche Definitionen im Team.** Jede und jeder von uns schrieb eigene Queries. Kleine Unterschiede, etwa welche Kategorien als Tech zählen oder ein Tippfehler in einem Kategorienamen, können Ergebnisse verändern, ohne dass es jemand merkt. Gemeinsame Annahmen zu Beginn aufzuschreiben, hat geholfen; beim nächsten Mal würde ich zusätzlich eine gemeinsame Basis-Query teilen.
 - **Währung.** Magists Preise sind in brasilianischen Real, Eniacs in Euro. Für einen korrekten Vergleich muss jeder Wert einheitlich umgerechnet und die Währung auf jedem Diagramm angegeben werden.
 - **Auf eine Empfehlung einigen.** Unterwegs hatten wir drei mögliche Empfehlungen: einen regionalen Start, einen befristeten Test und einen alternativen Partner. Uns auf eine Botschaft für die Abschlusspräsentation zu einigen, erforderte eine bewusste Diskussion.
+
+### Nächste Schritte
+
+- Öfter präsentieren, weil Ergebnisse verständlich zu erklären eine Kernfähigkeit im Job als Data Analyst ist.
+- In Tableau schneller und selbstständiger werden.
+- Gezieltere SQL-Abfragen schreiben.
 
 ### Offene Frage
 

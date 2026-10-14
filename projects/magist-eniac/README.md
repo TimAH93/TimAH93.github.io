@@ -94,12 +94,20 @@ Team: Julia, Matías and Tim
 - **Data needs context.** The numbers showed that Magist sells few expensive tech products. The market research explained why: in Brazil, premium Apple products are luxury goods with a small target group.
 - **My psychology background helps.** Research on status seeking gave a plausible explanation for Apple demand in Brazil, and it made the story easier to follow for a non-technical audience.
 - **A recommendation needs a clear answer.** A decision-maker wants yes, no, or yes under conditions, supported by two or three strong points, not every query result.
+- **Different working styles can complement each other.** We approached tasks quite differently, but everyone could bring in their strengths, and together we built a presentation none of us would have made alone.
 
 ### Challenges
 
+- **Working in a team.** I had mostly worked on my own before. It was important to me to treat my teammates with respect and leave room for their contributions. A clear structure from the start helped me focus on my own tasks and trust the others with theirs.
 - **Consistent definitions across the team.** Each of us wrote our own queries. Small differences, such as which categories count as tech, or a typo in a category name, can change results without anyone noticing. Writing down shared assumptions at the start helped; next time I would also share one common base query.
 - **Currency.** Magist prices are in Brazilian real, Eniac's in euro. Comparing them correctly requires converting every value consistently and labelling the currency on each chart.
 - **Converging on one recommendation.** Along the way we had three candidate recommendations: a regional rollout, a limited test, and an alternative partner. Agreeing on one message for the final presentation took explicit discussion.
+
+### Next Steps
+
+- Present more often, since explaining results clearly is a core skill for a data analyst.
+- Get faster and more independent in Tableau.
+- Write more targeted SQL queries.
 
 ### Open Question
 
