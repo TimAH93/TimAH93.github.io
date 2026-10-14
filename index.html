@@ -42,6 +42,13 @@
 
     header { margin-bottom: 56px; }
 
+    .lang {
+      text-align: right;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+
     h1 {
       font-size: clamp(1.9rem, 5vw, 2.5rem);
       font-weight: 700;
@@ -143,6 +150,7 @@
 </head>
 <body>
   <main>
+    <nav class="lang"><strong>English</strong> · <a href="index.de.html" hreflang="de" lang="de">Deutsch</a></nav>
     <header>
       <h1>Tim Aßmann</h1>
       <p class="lead">Psychologist currently training in Data Analytics &amp; AI, focused on presenting data clearly with Tableau, SQL and Python. This portfolio collects independent projects built on public datasets.</p>
@@ -189,7 +197,7 @@
     </section>
 
     <footer>
-      Projects use public data only, credited with source and license on each project page.
+      Data sources and licenses are credited on each project page.
     </footer>
   </main>
 </body>

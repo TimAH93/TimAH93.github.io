@@ -1,5 +1,7 @@
 # Delivery & Loyalty
 
+**English** · [Deutsch](README.de.md)
+
 **Do late deliveries cost customer loyalty?**
 
 Main finding: to be added once the analysis is complete.
