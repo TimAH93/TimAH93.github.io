@@ -8,6 +8,7 @@ Website: https://timah93.github.io
 
 | Project | Question | Tools | Status |
 |---|---|---|---|
+| [Should Eniac Enter Brazil via Magist?](projects/magist-eniac/) | Is a Brazilian marketplace the right partner for a premium tech retailer? (group project) | SQL, Tableau | Completed |
 | [Delivery & Loyalty](projects/delivery-loyalty/) | Do late deliveries cost customer loyalty? (Olist Brazilian E-Commerce dataset) | SQL, Tableau | In progress |
 
 ## Skills
