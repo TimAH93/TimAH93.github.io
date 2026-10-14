@@ -2,113 +2,68 @@
 
 **English** · [Deutsch](README.de.md)
 
-**Recommendation: Enter Brazil, but not through Magist.** Magist delivers fast and reliably only in a few south-eastern states, and its tech business is small and low-priced compared with Eniac's premium Apple accessories.
+**Type:** Group project (team of three), Data Analytics & AI training at WBS · **Duration:** 2 weeks · **Status:** Completed
 
-**Type:** Group project (team of three), Data Analytics & AI training at WBS
-**Status:** Completed
+## Summary
 
-## Question
+In this project, our team took the role of analysts for Eniac, a European online retailer of Apple-compatible tech. Eniac was considering a partnership with Magist, a Brazilian marketplace, to enter the Brazilian market. Our task was to find out with data whether Magist is a good partner, and to present a clear recommendation to Eniac's management.
 
-Eniac, a European online retailer of Apple-compatible tech, considered a partnership with Magist, a Brazilian marketplace, to enter the Brazilian market. Two concerns had to be checked before signing:
+We broke the business question down into smaller questions, answered them with SQL, visualised the results in Tableau, added market research, and presented our recommendation in a short management presentation: Brazil is an attractive market, but Magist is not the right partner for a premium brand.
 
-1. **Delivery:** Does Magist deliver fast enough for a premium brand?
-2. **Fit:** Is Magist a good partner for high-end tech products?
+## How We Solved It
 
-## Data
-
-- **Magist database (MySQL):** course-provided database based on the public [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) ([CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)). About 99,000 orders, September 2016 to October 2018. The data is not included in this repository.
-- **Market research:** public sources on Brazilian e-commerce from 2017 to 2019 (listed below).
-
-## Approach
-
-1. Broke the main question down into a question tree with five areas: product range, sellers, delivery, customer satisfaction and market. Each sub-question had an owner, a status and a short answer.
-2. Agreed on shared assumptions: six tech categories, revenue = item price without freight and cancelled orders.
-3. Answered the data questions with SQL in MySQL Workbench and visualised the results in Tableau.
-4. Added market research to put the data into context.
-5. Combined everything into a short decision presentation.
-
-## Findings
-
-**Delivery (team result):** Only three states (São Paulo, Paraná, Minas Gerais) deliver on average in under 12 days with more than 94 % on time. For high-priced tech orders, only two cities met all criteria for speed, punctuality and reviews.
-
-**Product fit (team result):** Tech makes up only about 12 % of Magist's revenue, and average tech prices are far below Eniac's price level.
-
-**Tech categories in the catalogue (my analysis):** 3,387 of 32,951 products (10.3 %) fall into six tech categories. The categories alone do not show whether products are high-end or Apple-compatible, so the fit could not be proven from the data.
-
-| Category | Products |
-|---|---|
-| computers_accessories | 1,639 |
-| telephony | 1,134 |
-| electronics | 517 |
-| audio | 58 |
-| computers | 30 |
-| tablets_printing_image | 9 |
-
-Query: [`sql/01_tech_categories.sql`](sql/01_tech_categories.sql)
-
-**Market context (my research):**
-
-- **Growth:** Brazilian e-commerce grew by about 12 % in 2018, while the overall economy grew by about 1 %.
-- **Apple as a luxury good:** the iPhone XS launched at 7,300 BRL in Brazil, the highest price among 40 countries compared. Research on income inequality and status seeking (Walasek & Brown, 2015) helps explain why demand exists anyway: in very unequal societies, status goods matter more.
-- **Fragile logistics:** an 11-day truck drivers' strike in May 2018 cost Brazilian e-commerce about 407 million BRL, and complaints about late postal deliveries rose every year from 2016 to 2018.
-- **Competition:** B2W led the market, Mercado Livre was growing fast and shortened its median delivery time in Brazil by two days in 2018, and Amazon started selling electronics in Brazil in 2017.
-
-## Recommendation
-
-Brazil is an attractive, growing market, but Magist is not the right partner for Eniac. A larger marketplace with stronger logistics, such as Mercado Livre, fits a premium brand better.
-
-## Tools
-
-- SQL (MySQL Workbench)
-- Tableau
-- Google Docs and Slides for team coordination and the presentation
+1. **Understanding the business problem.** Eniac had two concerns: Does Magist deliver fast enough for premium customers? And does Magist fit high-end tech products?
+2. **Question tree.** We split these concerns into five areas (product range, sellers, delivery, customer satisfaction, market) with numbered sub-questions. Each question had an owner, a status and a short answer, so we always knew what was still open.
+3. **Shared assumptions.** Before querying, we agreed on which product categories count as tech and how to define revenue, so that our results would be comparable.
+4. **Data analysis with SQL.** We explored the Magist database in MySQL Workbench: product categories, prices, sellers, delivery times, punctuality and reviews.
+5. **Visualisation in Tableau.** We turned the key results into charts that a non-technical audience can read at a glance.
+6. **Market research.** Because the data alone could not answer every question, we added public research on Brazilian e-commerce, competitors, Apple prices and logistics.
+7. **Presentation.** We reduced everything to two questions, two clear answers and one recommendation, and presented it to the "management" in a role play.
 
 ## My Role
 
 - Structured the analysis as a question tree and kept track of open questions
-- Identified the tech categories with SQL (catalogue analysis)
-- Did the market research on growth, competitors, Apple prices and logistics
+- Analysed which product categories are relevant for Eniac (SQL)
+- Did the market research on growth, competitors, Apple prices and logistics, with sources
 - Opened and closed the presentation, and presented the market context and the recommendation
 
 Team: Julia, Matías and Tim
 
-## Sources (market research)
+## Languages, Libraries and Tools
 
-- Ebit, Webshoppers 38 (via PagBrasil), Sep. 2018
-- Tribuna PR, e-commerce revenue 2018, Feb. 2019
-- Gazeta do Povo, Mercado Livre vs. B2W, Jul. 2017
-- Tecnoblog, Amazon starts selling electronics in Brazil, Oct. 2017
-- Olhar Digital, iPhone prices in Brazil, Oct. 2018, and Deutsche Bank Research country comparison, Jul. 2019
-- Walasek, L. & Brown, G. D. A. (2015). Income Inequality and Status Seeking. *Psychological Science*
-- Diário do Comércio, e-commerce losses during the truck strike, Jun. 2018
-- Olhar Digital, complaints about Correios delays, Feb. 2019
-- MercadoLibre, Q4 2018 earnings call
+- **SQL** (MySQL Workbench): joins, aggregations, CASE WHEN, window functions
+- **Tableau**: bar charts, calculated fields, colour coding for thresholds
+- **Google Docs and Slides**: question tree, shared notes, presentation
+- **Market research** in Portuguese-language sources
 
----
-
-## Reflection
-
-### Key Learnings
+## Key Learnings
 
 - **A question tree keeps a team focused.** Splitting one business question into numbered sub-questions with owners made it clear who works on what and which answers were still missing.
 - **Data needs context.** The numbers showed that Magist sells few expensive tech products. The market research explained why: in Brazil, premium Apple products are luxury goods with a small target group.
-- **My psychology background helps.** Research on status seeking gave a plausible explanation for Apple demand in Brazil, and it made the story easier to follow for a non-technical audience.
+- **My psychology background helps.** Research on status seeking (Walasek & Brown, 2015) gave a plausible explanation for Apple demand in Brazil, and it made the story easier to follow for a non-technical audience.
 - **A recommendation needs a clear answer.** A decision-maker wants yes, no, or yes under conditions, supported by two or three strong points, not every query result.
 - **Different working styles can complement each other.** We approached tasks quite differently, but everyone could bring in their strengths, and together we built a presentation none of us would have made alone.
 
-### Challenges
+## Challenges
 
 - **Working in a team.** I had mostly worked on my own before. It was important to me to treat my teammates with respect and leave room for their contributions. A clear structure from the start helped me focus on my own tasks and trust the others with theirs.
 - **Consistent definitions across the team.** Each of us wrote our own queries. Small differences, such as which categories count as tech, or a typo in a category name, can change results without anyone noticing. Writing down shared assumptions at the start helped; next time I would also share one common base query.
 - **Currency.** Magist prices are in Brazilian real, Eniac's in euro. Comparing them correctly requires converting every value consistently and labelling the currency on each chart.
 - **Converging on one recommendation.** Along the way we had three candidate recommendations: a regional rollout, a limited test, and an alternative partner. Agreeing on one message for the final presentation took explicit discussion.
 
-### Next Steps
+## Next Steps
 
 - Present more often, since explaining results clearly is a core skill for a data analyst.
 - Get faster and more independent in Tableau.
 - Write more targeted SQL queries.
+- Follow up the question this project left open, whether late deliveries cost customer loyalty, in my own project [Delivery & Loyalty](../delivery-loyalty/README.md).
 
-### Open Question
+## Files
 
-Whether late deliveries actually lead to worse reviews and fewer repeat customers was left open in this project. I follow it up in my own project [Delivery & Loyalty](../delivery-loyalty/README.md).
+- [`presentation/Team_Jaguar_Magist.pdf`](presentation/Team_Jaguar_Magist.pdf): final presentation (German)
+- [`sql/01_tech_categories.sql`](sql/01_tech_categories.sql): my query for the product categories
+
+## Data and Sources
+
+- **Magist database (MySQL):** course-provided database based on the public [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce), licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). About 99,000 orders, September 2016 to October 2018.
+- **Market research:** Ebit Webshoppers 38 (2018); Tribuna PR (2019); Gazeta do Povo (2017); Tecnoblog (2017); Olhar Digital (2018, 2019) with Deutsche Bank Research (2019); Diário do Comércio (2018); MercadoLibre Q4 2018 earnings call; Walasek, L. & Brown, G. D. A. (2015). Income Inequality and Status Seeking. *Psychological Science*.
