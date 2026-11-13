@@ -11,13 +11,14 @@ Website: https://timah93.github.io
 | Project | Question | Tools | Status |
 |---|---|---|---|
 | [Should Eniac Enter Brazil via Magist?](projects/magist-eniac/README.md) | Is a Brazilian marketplace the right partner for a premium tech retailer? (group project) | SQL, Tableau | Completed |
+| [Eniac · Do the Discounts Pay Off?](projects/eniac-rabatte/README.md) | Do an online retailer's discounts pay off? (group project) | Python (pandas, matplotlib) | Completed |
 | [Delivery & Loyalty](projects/delivery-loyalty/README.md) | Do late deliveries cost customer loyalty? (Olist Brazilian E-Commerce dataset) | SQL, Tableau | In progress |
 
 ## Skills
 
 - SQL (MySQL)
 - Tableau
-- Python (pandas)
+- Python (pandas, matplotlib)
 - Google Sheets
 
 ## Contact

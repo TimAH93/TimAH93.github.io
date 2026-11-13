@@ -1,0 +1,22 @@
+from matplotlib.patches import FancyBboxPatch, Rectangle
+
+def balken_abrunden(ax, radius_px=12, richtung="oben"):
+    """Rundet bei allen Balken nur das Ende ab (oben bzw. rechts), der Fuß bleibt eckig.
+    radius_px = Rundung in Bildpunkten. Erst aufrufen, wenn ylim/xlim fertig gesetzt sind."""
+    ax.figure.canvas.draw()                      # damit die Größe des Diagramms bekannt ist
+    x0, x1 = ax.get_xlim(); y0, y1 = ax.get_ylim()
+    box = ax.get_window_extent()
+    rx = radius_px * abs(x1 - x0) / box.width    # Rundung in Daten-Einheiten (waagerecht)
+    ry = radius_px * abs(y1 - y0) / box.height   # Rundung in Daten-Einheiten (senkrecht)
+    for balken in list(ax.patches):
+        x, y = balken.get_x(), balken.get_y()
+        b, h = balken.get_width(), balken.get_height()
+        farbe = balken.get_facecolor()
+        balken.remove()
+        r = min(rx, b / 2) if richtung == "oben" else min(rx, b)
+        ax.add_patch(FancyBboxPatch((x, y), b, h, boxstyle=f"round,pad=0,rounding_size={r}",
+                                    mutation_aspect=ry / rx, fc=farbe, ec="none"))
+        if richtung == "oben":                   # senkrechte Balken: unten eckig machen
+            ax.add_patch(Rectangle((x, y), b, min(h, ry * r / rx), fc=farbe, ec="none"))
+        else:                                    # liegende Balken: links eckig machen
+            ax.add_patch(Rectangle((x, y), min(b, r), h, fc=farbe, ec="none"))

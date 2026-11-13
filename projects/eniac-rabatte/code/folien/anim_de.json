@@ -1,0 +1,11 @@
+[
+ {"name":"Titel","has":["Rabattstrategie für Eniac"],"mode":"clickauto","groups":[["text=ENIAC · RABATTANALYSE"],["text=Rabattstrategie für Eniac"],["descr=Logo","text=Team Discount Detectives","text=Walter · Miguel · Tim"]]},
+ {"name":"Agenda 1","has":["Farben für:","Kosten Rabatte uns Umsatz und Ruf?"],"not":["Ja, aber nicht überall."],"mode":"click","groups":[["text=1","text=Bringen Rabatte Umsatz?"],["text=2","text=Kosten Rabatte uns Umsatz und Ruf?"],["legend"]]},
+ {"name":"Datengrundlage","has":["UNSERE DATENGRUNDLAGE"],"mode":"auto","groups":[["text=437","text=Tage"],["text=46.605","text=Bestellungen"],["text=15,9","text=Mio. € Umsatz"]]},
+ {"name":"93 %","has":["WIE VIEL RABATT GEBEN WIR"],"mode":"auto","groups":[["descr=Balkendiagramm: Anteil der Positionen"],["text=56.203","has=von 60.375 Positionen"]]},
+ {"name":"Agenda 2","has":["Ja, aber nicht überall."],"not":["Den Ruf nicht"],"mode":"click","groups":[["text=Ja, aber nicht überall."]]},
+ {"name":"Agenda 3","has":["Den Ruf nicht, aber Geld an der falschen Stelle."],"mode":"click","groups":[["text=Den Ruf nicht, aber Geld an der falschen Stelle."]]},
+ {"name":"Antwort","has":["Wir verlieren kein Geld."],"mode":"click","groups":[["text=Wir verlieren kein Geld."],["has=Aber wir verpassen Geld"]]},
+ {"name":"Empfehlung","has":["Apple-Rabatt senken","Rabatt außerhalb der Saison"],"mode":"click","groups":[["text=1","text=Apple-Rabatt senken","has=Jeder Prozentpunkt"],["text=2","text=Andere Marken gezielt rabattieren","has=Kaufanreiz"],["text=3","text=Rabatt außerhalb der Saison","has=Im November kaufen"]]},
+ {"name":"Danke","has":["Vielen Dank für Ihre Aufmerksamkeit"],"mode":"auto","groups":[["text=Vielen Dank für Ihre Aufmerksamkeit"],["descr=Logo","text=Team Discount Detectives","text=Walter · Miguel · Tim"]]}
+]
