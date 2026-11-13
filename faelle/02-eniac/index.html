@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tim Aßmann · Fallstudie 02 Eniac</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@300;500&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Übergangsseite für Fall 02: Video zuerst, dann Frage, Antwort, Empfehlung und Links. Gleiche Gestaltung wie die Startseite. */
+:root {
+  --bg: #000000; --panel: #0C0B0D; --line: #222024; --fg: #F2F2F2; --muted: #8D8890; --dim: #55515A;
+  --c1: #3DA5FF; --c2: #8B5CFF; --c3: #FF2D95;
+  --display: "Antonio", "Oswald", "Arial Narrow", sans-serif;
+  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 18px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 28px max(24px, env(safe-area-inset-right, 0px)) 80px max(24px, env(safe-area-inset-left, 0px)); }
+a { color: var(--fg); }
+
+.top { display: flex; justify-content: space-between; align-items: center; gap: 16px; font: 500 12px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.top a { color: var(--muted); text-decoration: none; }
+.top a:hover { color: var(--fg); }
+.top a:focus-visible, .lang button:focus-visible { outline: 1px solid var(--fg); outline-offset: 3px; }
+.lang { display: flex; align-items: center; gap: 10px; }
+.lang button { font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--muted); background: none; border: 0; padding: 6px 2px; cursor: pointer; }
+.lang button:hover, .lang button[aria-pressed="true"] { color: var(--fg); }
+.lang button[aria-pressed="true"] { box-shadow: inset 0 -1px 0 var(--fg); }
+[data-i18n] { transition: opacity .2s ease; }
+body.swap [data-i18n] { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { [data-i18n] { transition: none; } }
+
+header { padding: 56px 0 28px; }
+.kicker { font: 500 12px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 500 clamp(56px, 9vw, 104px)/.9 var(--display); text-transform: uppercase; letter-spacing: .01em; margin: 14px 0 18px; }
+h1 span { background: linear-gradient(100deg, var(--c1), var(--c2) 50%, var(--c3)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lead { margin: 0; font-size: clamp(20px, 2.2vw, 26px); line-height: 1.35; max-width: 34em; }
+.lead small { display: block; margin-top: 10px; font-size: 16px; color: var(--muted); }
+
+.video { margin: 28px 0 8px; border: 1px solid var(--line); background: var(--panel); }
+.video video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #0A0A0C; }
+.video figcaption { padding: 10px 14px; font: 400 12px var(--mono); letter-spacing: .06em; color: var(--dim); }
+
+section { padding: 40px 0 0; }
+h2 { font: 500 12px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin: 0 0 18px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.nums { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.num { padding: 18px; background: var(--panel); border: 1px solid var(--line); }
+.num b { display: block; font: 300 clamp(36px, 4.4vw, 52px)/1 var(--display); font-variant-numeric: tabular-nums; }
+.num span { display: block; margin-top: 8px; font-size: 15px; color: var(--muted); }
+
+.qa { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.qa li { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 4px 12px; padding: 16px 18px; background: var(--panel); border: 1px solid var(--line); }
+.qa .n { grid-row: span 2; font: 300 34px/1 var(--display); color: var(--muted); }
+.qa .q { color: var(--muted); }
+.qa .a { font-weight: 600; }
+.answer { margin: 18px 0 0; font-size: clamp(20px, 2.2vw, 26px); line-height: 1.35; }
+
+.recs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.recs li { padding: 18px; background: var(--panel); border: 1px solid var(--line); border-top: 2px solid var(--c2); }
+.recs b { display: block; font: 500 22px/1.15 var(--display); text-transform: uppercase; letter-spacing: .02em; margin-bottom: 8px; }
+.recs span { color: var(--muted); font-size: 16px; }
+.note { margin: 16px 0 0; color: var(--muted); font-size: 16px; max-width: 46em; }
+
+.me { margin: 0; padding-left: 20px; color: var(--fg); }
+.me li { margin: 4px 0; }
+
+.links { display: flex; flex-wrap: wrap; gap: 12px; }
+.links a { font: 500 13px var(--mono); letter-spacing: .08em; text-transform: uppercase; text-decoration: none; padding: 12px 16px; border: 1px solid var(--line); background: var(--panel); }
+.links a:hover, .links a:focus-visible { border-color: var(--fg); outline: none; }
+
+.foot { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 24px; font: 400 12px var(--mono); letter-spacing: .08em; color: var(--dim); }
+.foot a { color: var(--muted); text-decoration: none; } .foot a:hover { color: var(--fg); }
+
+@media (max-width: 760px) {
+  .nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .recs { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  body { font-size: 17px; }
+  .wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  header { padding-top: 36px; }
+}
+</style>
+
+<div class="wrap">
+  <nav class="top" aria-label="Navigation">
+    <a href="../../index.html" data-lang-link data-i18n="back">← Alle Fälle</a>
+    <span class="lang" role="group" aria-label="Sprache / Language"><button type="button" data-set-lang="de" lang="de" aria-pressed="true">DE</button><span aria-hidden="true">·</span><button type="button" data-set-lang="en" lang="en" aria-pressed="false">EN</button></span>
+  </nav>
+
+  <header>
+    <div class="kicker" data-i18n="kicker">Fallstudie 02 · Python · pandas</div>
+    <h1><span>Eniac</span></h1>
+    <p class="lead"><span data-i18n="lead">Lohnen sich Eniacs Rabatte?</span>
+      <small data-i18n="lead_sub">Eniac verkauft Apple-Produkte und Zubehör online in Spanien, fast alles mit Rabatt. Wir haben die Verkaufsdaten ausgewertet und dem CEO in fünf Minuten eine Antwort gegeben.</small></p>
+  </header>
+
+  <figure class="video">
+    <video id="vid" controls playsinline preload="metadata" poster="poster_de.jpg">
+      <source id="vidsrc" src="../../projects/eniac-rabatte/video/Eniac_Praesentation_Video.mp4" type="video/mp4">
+    </video>
+    <figcaption data-i18n="caption">Die Präsentation als Video · 2:24 Minuten · ohne Ton</figcaption>
+  </figure>
+
+  <section>
+    <h2 data-i18n="h_data">Datengrundlage</h2>
+    <div class="nums">
+      <div class="num"><b>437</b><span data-i18n="n1">Tage, Januar 2017 bis März 2018</span></div>
+      <div class="num"><b data-i18n="n2v">46.605</b><span data-i18n="n2">abgeschlossene Bestellungen</span></div>
+      <div class="num"><b data-i18n="n3v">15,9</b><span data-i18n="n3">Mio. € Umsatz</span></div>
+      <div class="num"><b data-i18n="n4v">93 %</b><span data-i18n="n4">aller Positionen mit Rabatt</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 data-i18n="h_answer">Antwort</h2>
+    <ul class="qa">
+      <li><span class="n">1</span><span class="q" data-i18n="q1">Bringen Rabatte Umsatz?</span><span class="a" data-i18n="a1">Ja, aber nicht überall.</span></li>
+      <li><span class="n">2</span><span class="q" data-i18n="q2">Kosten Rabatte uns Umsatz und Ruf?</span><span class="a" data-i18n="a2">Den Ruf nicht, aber Geld an der falschen Stelle.</span></li>
+    </ul>
+    <p class="answer" data-i18n="answer">Wir verlieren kein Geld. Aber wir verpassen Geld, das wir noch nicht verdienen.</p>
+  </section>
+
+  <section>
+    <h2 data-i18n="h_rec">Empfehlung</h2>
+    <ul class="recs">
+      <li><b data-i18n="r1">Apple-Rabatt senken</b><span data-i18n="r1t">Jeder Prozentpunkt sind rund 105.000 €.</span></li>
+      <li><b data-i18n="r2">Andere Marken gezielt rabattieren</b><span data-i18n="r2t">Dort wirkt Rabatt als Kaufanreiz.</span></li>
+      <li><b data-i18n="r3">Rabatt außerhalb der Saison</b><span data-i18n="r3t">Im November kaufen die Kunden ohnehin.</span></li>
+    </ul>
+    <p class="note" data-i18n="rec_note">Bei 7 statt 11,1 % Apple-Rabatt dürften bis zu 4,5 % weniger Apple-Geräte verkauft werden, ohne dass Umsatz verloren geht. Weil Einkaufspreise und eine Kunden-ID fehlen, schlagen wir einen Test vor: iPads sechs Wochen lang mit weniger Rabatt, nicht im November.</p>
+  </section>
+
+  <section>
+    <h2 data-i18n="h_me">Mein Beitrag</h2>
+    <p class="note" style="margin-top:0" data-i18n="me_intro">Präsentiert haben wir zu dritt, als Team Discount Detectives mit Walter und Miguel. Organisation, Code und Gestaltung lagen überwiegend bei mir:</p>
+    <ul class="me">
+      <li data-i18n="m1">Gruppendokument mit Fragenbaum, Zuständigkeiten und einheitlicher Antworten-Vorlage aufgebaut</li>
+      <li data-i18n="m2">36.169 fehlerhafte Preise repariert statt gelöscht, sonst hätten rund 46 % des Umsatzes gefehlt</li>
+      <li data-i18n="m3">Finales Notebook, das alle Zahlen der Präsentation aus den Rohdaten nachrechnet</li>
+      <li data-i18n="m4">Storyline, alle Folien, Diagramme und Animationen</li>
+      <li data-i18n="m5">Empfehlung mit Beispielrechnung und Anhang für Rückfragen</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 data-i18n="h_more">Im Detail</h2>
+    <div class="links">
+      <a id="l_project" href="https://github.com/TimAH93/TimAH93.github.io/blob/main/projects/eniac-rabatte/README.de.md" data-i18n="l1">Projektseite mit Diagrammen und Code</a>
+      <a id="l_pdf" href="https://github.com/TimAH93/TimAH93.github.io/blob/main/projects/eniac-rabatte/presentation/Eniac_CEO_Praesentation.pdf" data-i18n="l2">Präsentation als PDF</a>
+      <a href="https://github.com/TimAH93/TimAH93.github.io/blob/main/projects/eniac-rabatte/code/analyse/Eniac_Rabattanalyse.ipynb" data-i18n="l3">Notebook</a>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span data-i18n="foot">Fallstudie · Datenanalyse</span>
+    <span><a href="https://github.com/TimAH93">GitHub</a></span>
+  </footer>
+</div>
+
+<script>
+/* Übersetzungen: pro Schlüssel eine Fassung pro Sprache (wie auf der Startseite) */
+var tr = {
+  back:     { de: "← Alle Fälle", en: "← All cases" },
+  kicker:   { de: "Fallstudie 02 · Python · pandas", en: "Case study 02 · Python · pandas" },
+  lead:     { de: "Lohnen sich Eniacs Rabatte?", en: "Do Eniac's discounts pay off?" },
+  lead_sub: { de: "Eniac verkauft Apple-Produkte und Zubehör online in Spanien, fast alles mit Rabatt. Wir haben die Verkaufsdaten ausgewertet und dem CEO in fünf Minuten eine Antwort gegeben.",
+              en: "Eniac sells Apple products and accessories online in Spain, almost everything at a discount. We analysed the sales data and gave the CEO an answer in five minutes." },
+  caption:  { de: "Die Präsentation als Video · 2:24 Minuten · ohne Ton", en: "The presentation as a video · 2:30 minutes · no sound" },
+  h_data:   { de: "Datengrundlage", en: "Data" },
+  n1:       { de: "Tage, Januar 2017 bis März 2018", en: "days, January 2017 to March 2018" },
+  n2v:      { de: "46.605", en: "46,605" },
+  n2:       { de: "abgeschlossene Bestellungen", en: "completed orders" },
+  n3v:      { de: "15,9", en: "15.9" },
+  n3:       { de: "Mio. € Umsatz", en: "€ million revenue" },
+  n4v:      { de: "93 %", en: "93%" },
+  n4:       { de: "aller Positionen mit Rabatt", en: "of all items discounted" },
+  h_answer: { de: "Antwort", en: "Answer" },
+  q1:       { de: "Bringen Rabatte Umsatz?", en: "Do discounts drive revenue?" },
+  a1:       { de: "Ja, aber nicht überall.", en: "Yes, but not everywhere." },
+  q2:       { de: "Kosten Rabatte uns Umsatz und Ruf?", en: "Do discounts cost us revenue and reputation?" },
+  a2:       { de: "Den Ruf nicht, aber Geld an der falschen Stelle.", en: "Not our reputation, but money in the wrong place." },
+  answer:   { de: "Wir verlieren kein Geld. Aber wir verpassen Geld, das wir noch nicht verdienen.", en: "We're not losing money. But we're missing out on money we could be earning." },
+  h_rec:    { de: "Empfehlung", en: "Recommendation" },
+  r1:       { de: "Apple-Rabatt senken", en: "Lower the Apple discount" },
+  r1t:      { de: "Jeder Prozentpunkt sind rund 105.000 €.", en: "Each percentage point is worth about €105,000." },
+  r2:       { de: "Andere Marken gezielt rabattieren", en: "Target discounts at other brands" },
+  r2t:      { de: "Dort wirkt Rabatt als Kaufanreiz.", en: "There, discounts work as a purchase incentive." },
+  r3:       { de: "Rabatt außerhalb der Saison", en: "Discount outside the peak season" },
+  r3t:      { de: "Im November kaufen die Kunden ohnehin.", en: "In November, customers buy anyway." },
+  rec_note: { de: "Bei 7 statt 11,1 % Apple-Rabatt dürften bis zu 4,5 % weniger Apple-Geräte verkauft werden, ohne dass Umsatz verloren geht. Weil Einkaufspreise und eine Kunden-ID fehlen, schlagen wir einen Test vor: iPads sechs Wochen lang mit weniger Rabatt, nicht im November.",
+              en: "At 7% instead of 11.1% Apple discount, up to 4.5% fewer Apple devices could be sold without losing revenue. Because purchase prices and a customer ID are missing, we propose a test: iPads with a lower discount for six weeks, not in November." },
+  h_me:     { de: "Mein Beitrag", en: "My contribution" },
+  me_intro: { de: "Präsentiert haben wir zu dritt, als Team Discount Detectives mit Walter und Miguel. Organisation, Code und Gestaltung lagen überwiegend bei mir:",
+              en: "The three of us presented together, as team Discount Detectives with Walter and Miguel. Organisation, code and design were mostly my part:" },
+  m1:       { de: "Gruppendokument mit Fragenbaum, Zuständigkeiten und einheitlicher Antworten-Vorlage aufgebaut", en: "Set up the group document with a question tree, owners and a consistent answer template" },
+  m2:       { de: "36.169 fehlerhafte Preise repariert statt gelöscht, sonst hätten rund 46 % des Umsatzes gefehlt", en: "Repaired 36,169 broken prices instead of deleting them; otherwise about 46% of revenue would have been missing" },
+  m3:       { de: "Finales Notebook, das alle Zahlen der Präsentation aus den Rohdaten nachrechnet", en: "Final notebook that recalculates every number in the presentation from the raw data" },
+  m4:       { de: "Storyline, alle Folien, Diagramme und Animationen", en: "Storyline, all slides, charts and animations" },
+  m5:       { de: "Empfehlung mit Beispielrechnung und Anhang für Rückfragen", en: "Recommendation with example calculation, and an appendix for follow-up questions" },
+  h_more:   { de: "Im Detail", en: "In detail" },
+  l1:       { de: "Projektseite mit Diagrammen und Code", en: "Project page with charts and code" },
+  l2:       { de: "Präsentation als PDF", en: "Presentation as PDF" },
+  l3:       { de: "Notebook", en: "Notebook" },
+  foot:     { de: "Fallstudie · Datenanalyse", en: "Fallstudie · Data analysis" }
+};
+var media = {
+  de: { video: "../../projects/eniac-rabatte/video/Eniac_Praesentation_Video.mp4", poster: "poster_de.jpg",
+        project: "https://github.com/TimAH93/TimAH93.github.io/blob/main/projects/eniac-rabatte/README.de.md",
+        pdf: "https://github.com/TimAH93/TimAH93.github.io/blob/main/projects/eniac-rabatte/presentation/Eniac_CEO_Praesentation.pdf" },
+  en: { video: "../../projects/eniac-rabatte/video/Eniac_Presentation_Video_EN.mp4", poster: "poster_en.jpg",
+        project: "https://github.com/TimAH93/TimAH93.github.io/blob/main/projects/eniac-rabatte/README.md",
+        pdf: "https://github.com/TimAH93/TimAH93.github.io/blob/main/projects/eniac-rabatte/presentation/Eniac_CEO_Presentation_EN.pdf" }
+};
+
+var lang = "de";
+function apply() {
+  document.querySelectorAll("[data-i18n]").forEach(function (el) { el.textContent = tr[el.dataset.i18n][lang]; });
+  document.querySelectorAll("[data-set-lang]").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.setLang === lang); });
+  document.querySelectorAll("[data-lang-link]").forEach(function (a) {
+    var base = a.getAttribute("href").split("?")[0];
+    a.setAttribute("href", lang === "de" ? base : base + "?lang=" + lang);
+  });
+  /* Video, Vorschaubild und Links in der gewählten Sprache */
+  var v = document.getElementById("vid"), s = document.getElementById("vidsrc");
+  if (s.getAttribute("src") !== media[lang].video) { s.setAttribute("src", media[lang].video); v.setAttribute("poster", media[lang].poster); v.load(); }
+  document.getElementById("l_project").href = media[lang].project;
+  document.getElementById("l_pdf").href = media[lang].pdf;
+  document.documentElement.lang = lang;
+}
+function setLang(next, animate) {
+  lang = (next === "en") ? "en" : "de";
+  try { localStorage.setItem("lang", lang); } catch (e) {}
+  try { var u = new URL(location.href); if (lang === "de") u.searchParams.delete("lang"); else u.searchParams.set("lang", lang); history.replaceState(null, "", u); } catch (e) {}
+  var calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!animate || calm) { apply(); return; }
+  document.body.classList.add("swap");
+  setTimeout(function () { apply(); document.body.classList.remove("swap"); }, 200);
+}
+document.querySelectorAll("[data-set-lang]").forEach(function (b) {
+  b.addEventListener("click", function () { if (b.dataset.setLang !== lang) setLang(b.dataset.setLang, true); });
+});
+(function () {
+  var fromUrl = null, saved = null;
+  try { fromUrl = new URLSearchParams(location.search).get("lang"); } catch (e) {}
+  try { saved = localStorage.getItem("lang"); } catch (e) {}
+  var browser = (navigator.language || "de").toLowerCase().indexOf("de") === 0 ? "de" : "en";
+  lang = fromUrl || saved || browser;
+  if (lang !== "de" && lang !== "en") lang = "de";
+  apply();
+})();
+</script>
