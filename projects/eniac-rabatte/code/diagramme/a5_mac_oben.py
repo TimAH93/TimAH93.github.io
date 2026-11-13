@@ -1,0 +1,10 @@
+exec(open('flamme.py').read().split('def bild')[0])
+stil(); fig,ax=plt.subplots(figsize=(16.5,7.2))
+dd=d.iloc[::-1]; ff=farben[::-1]   # kleinste unten, Mac oben
+ax.stackplot(x,dd.values,labels=dd.index,colors=ff,edgecolor=BG,linewidth=0.6)
+ax.set_xticks(x,cols,fontsize=14); ax.set_xlim(0,len(x)-1)
+ax.set_ylabel("Umsatz in Mio. €",fontsize=18); ax.tick_params(axis="y",labelsize=17)
+ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v,_: f"{v:.1f}".replace(".",",")))
+h,l=ax.get_legend_handles_labels(); ax.legend(h[::-1],l[::-1],loc="upper left",bbox_to_anchor=(1.01,1),frameon=False,fontsize=19)
+sns.despine(ax=ax); fig.tight_layout()
+fig.savefig('/tmp/claude-0/-home-claude/ae02de73-ec78-550b-bc51-12f30093d777/scratchpad/gs/img2/a5_mac_oben.png',dpi=1600/15); print('ok')

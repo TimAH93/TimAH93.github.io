@@ -1,5 +1,6 @@
--- Products per category (Portuguese + English name),
--- used to identify the tech categories relevant for Eniac.
+-- F1.1: Products per category, to identify the tech categories.
+-- Author: Tim
+
 USE magist;
 
 SELECT
