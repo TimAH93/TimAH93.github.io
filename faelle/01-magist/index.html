@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fallstudie 01 Magist</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@300;500&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: eine Seite pro Gedanke, Inhalte erscheinen Schritt für Schritt; Logo fest oben links, Fortschritt unten. */
+:root {
+  --bg: #000000;
+  --panel: #0C0B0D;
+  --line: #222024;
+  --fg: #F2F2F2;
+  --muted: #8D8890;
+  --dim: #55515A;
+  --base: #4A454E;
+  --sun-1: #FFE14D; --sun-2: #FF7A1A; --sun-3: #FF2D95;
+  --grad: linear-gradient(90deg, var(--sun-1), var(--sun-2) 50%, var(--sun-3));
+  --t-key: #FF7A1A; --t-cmp: #3DA5FF; --t-pos: #2EE6A6; --t-neg: #FF2D95; --t-ref: #A98BFF; --t-hl: #FFE14D;
+  --c1: #E66B07; --c2: #2D98F1; --c3: #2EE6A6; --c4: #9F74FD; --c5: #FF2D95;
+  --display: "Antonio", "Oswald", "Arial Narrow", sans-serif;
+  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 22px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased; overflow: hidden;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); }
+
+/* ---------- Rahmen ---------- */
+.brand { position: fixed; z-index: 20; top: calc(24px + env(safe-area-inset-top, 0px)); left: max(24px, env(safe-area-inset-left, 0px)); width: 120px; display: block; }
+.brand svg { display: block; width: 100%; height: auto; }
+.mode {
+  position: fixed; z-index: 20; top: calc(28px + env(safe-area-inset-top, 0px)); right: max(24px, env(safe-area-inset-right, 0px));
+  font: 500 12px var(--mono); letter-spacing: .12em; text-transform: uppercase;
+  background: none; color: var(--muted); border: 1px solid var(--line); padding: 8px 12px; cursor: pointer;
+}
+.mode:hover { color: var(--fg); border-color: var(--dim); }
+.mode:focus-visible, .nav button:focus-visible { outline: 1px solid var(--t-key); outline-offset: 2px; }
+
+.stage { position: fixed; inset: calc(96px + env(safe-area-inset-top, 0px)) 0 calc(76px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; align-content: safe center; overflow-y: auto; cursor: pointer;
+  padding: 8px max(24px, env(safe-area-inset-right, 0px)) 16px max(24px, env(safe-area-inset-left, 0px)); }
+.scene { display: none; width: 100%; max-width: 980px; min-width: 0; cursor: default; }
+.scene.active { display: block; }
+
+/* ---------- Schrittweises Erscheinen ---------- */
+[data-step] { opacity: 0; transform: translateY(10px); transition: opacity .5s ease, transform .5s ease; }
+[data-step].in { opacity: 1; transform: none; }
+[data-step].in.past { opacity: .45; }          /* ältere Zeilen treten zurück, das Neue führt das Auge */
+.keep.in.past { opacity: 1; }                   /* Grafiken und Titel bleiben voll sichtbar */
+
+/* Balken wachsen beim Erscheinen */
+.chart .bar { transform: scaleX(0); transform-box: fill-box; transform-origin: left center; transition: transform 1s cubic-bezier(.2,.7,.2,1); }
+.chart .in .bar { transform: scaleX(1); }
+/* Rennen: alle Balken gleichzeitig, langsam; der Gewinner wird am Ende grün */
+.chart .race .bar { transition-duration: 2.2s; transition-timing-function: cubic-bezier(.3,.6,.3,1); }
+.chart .race .v { transition-delay: 2s; }
+.chart .race .bar.win { transition: transform 2.2s cubic-bezier(.3,.6,.3,1), fill .5s ease 2.1s; }
+.chart .race.in .bar.win { fill: var(--c3); }
+.chart .v { opacity: 0; transition: opacity .4s ease .85s; }
+.chart .in .v { opacity: 1; }
+.chart .ref { stroke-dasharray: 4 4; opacity: 0; transition: opacity .5s ease; }
+.chart .in .ref, .chart .in.ref { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-step], .chart .bar, .chart .v { transition: none !important; }
+  [data-step] { transform: none; }
+}
+
+/* ---------- Typo ---------- */
+.kicker { font: 500 14px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--fg); margin: 0 0 18px; }
+.kicker b { color: var(--fg); font-weight: 500; }
+h1, h2 { font-family: var(--display); text-transform: uppercase; margin: 0 0 28px; text-wrap: balance; line-height: 1; }
+h1 { font-weight: 300; font-size: clamp(36px, 4.6vw, 64px); max-width: none; margin: 0; }
+h2 { font-weight: 500; font-size: clamp(30px, 3.8vw, 46px); letter-spacing: .01em; margin-bottom: 22px; }
+p { margin: 0 0 18px; max-width: 32em; }
+.big { font-size: clamp(22px, 2.3vw, 27px); line-height: 1.35; }
+.key { color: var(--t-key); font-weight: 600; }
+.cmp { color: var(--t-cmp); font-weight: 600; }
+.pos { color: var(--t-pos); font-weight: 600; }
+.neg { color: var(--t-neg); font-weight: 600; }
+.ref-t { color: var(--t-ref); font-weight: 600; }
+.hl { color: var(--t-hl); }
+.note { font-size: 16px; color: var(--muted); }
+
+/* Grafik */
+.fig { margin: 8px 0 22px; max-width: 820px; }
+.fig-t { font: 500 13px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; max-width: none; }
+.chart-wrap { overflow-x: auto; }
+.chart { display: block; width: 100%; min-width: 460px; height: auto; }
+.chart text { font-family: var(--mono); font-size: 13px; fill: var(--muted); }
+.chart .lbl { fill: var(--fg); }
+.chart .v { fill: var(--fg); font-size: 14px; }
+.chart .grid { stroke: var(--line); }
+.b-pos { fill: var(--c3); } .b-cmp { fill: var(--c2); } .b-key { fill: var(--c1); } .b-base { fill: var(--base); }
+
+/* Kennzahlen */
+.bans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; margin: 8px 0 30px; }
+.ban .num { font: 300 clamp(56px, 7.5vw, 96px)/1 var(--display); font-variant-numeric: tabular-nums; }
+.ban .num small { font-size: .42em; color: var(--muted); margin-left: 3px; }
+.ban .lbl { font-size: 19px; line-height: 1.4; color: var(--muted); margin-top: 10px; }
+.ban.pos .num { color: var(--t-pos); } .ban.neg .num { color: var(--t-neg); }
+
+/* Ziele der Ausstiegsklausel */
+.kpis { display: grid; gap: 0; margin: 8px 0 26px; max-width: 760px; }
+.kpi { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 14px 0; border-top: 1px solid var(--line); font-size: 20px; }
+.kpi b { font-weight: 600; }
+.kpi span { font-variant-numeric: tabular-nums; color: var(--t-ref); font-weight: 600; text-align: right; }
+
+.sources { list-style: none; padding: 0; margin: 0; font-size: 15px; color: var(--muted); display: grid; gap: 8px; max-width: 46em; }
+
+/* Seite 1: Frage teilt sich */
+.fold { overflow: hidden; max-height: 240px; transition: opacity .45s ease, transform .45s ease, max-height .8s cubic-bezier(.6,0,.2,1) .2s, margin .8s cubic-bezier(.6,0,.2,1) .2s; }
+.scene:has([data-step="4"].in) .fold { max-height: 0; margin: 0; opacity: 0; }
+.scene:has([data-step="4"].in) h1 { margin-bottom: 40px; }
+.tree { margin-top: 0; position: relative; padding-top: 2px; }
+/* ein Verlauf wie im Logo, der sich mit den Ästen öffnet: Gelb → Orange → Magenta */
+.tree::before { content: ""; position: absolute; left: 0; top: 0; height: 3px; width: 100%; background: linear-gradient(90deg, var(--sun-1), var(--sun-2) 50%, var(--sun-3)); clip-path: inset(0 100% 0 0); transition: clip-path 1.2s cubic-bezier(.6,0,.2,1); }
+.scene:has([data-step="4"].in) .tree::before { clip-path: inset(0 66.667% 0 0); }
+.scene:has([data-step="5"].in) .tree::before { clip-path: inset(0 33.333% 0 0); }
+.scene:has([data-step="6"].in) .tree::before { clip-path: inset(0 0 0 0); }
+.branch:nth-child(1) .b-no { color: var(--sun-1); } .branch:nth-child(2) .b-no { color: var(--sun-2); } .branch:nth-child(3) .b-no { color: var(--sun-3); }
+
+/* Fragenbaum */
+.tree { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin: 8px 0 28px; }
+.branch { border-top: 2px solid var(--line); padding-top: 14px; display: grid; gap: 6px; font-size: 18px; color: var(--muted); }
+.branch b { font-family: var(--display); font-weight: 500; text-transform: uppercase; font-size: 26px; color: var(--fg); letter-spacing: .02em; }
+.branch .b-no { font: 500 12px var(--mono); color: var(--dim); }
+.branch.in { border-top-color: var(--t-key); }
+/* São Paulo: Karte + Kennzahlen */
+.spgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 36px; align-items: center; margin: 4px 0 24px; }
+.mapbox { max-width: 380px; }
+.map { display: block; width: 100%; height: auto; }
+.map .st { fill: #1A181C; stroke: var(--bg); stroke-width: 1.5; transition: fill .8s ease; }
+.map .near { fill: #2A272E; }
+.map .sp { fill: #1A181C; }
+.mapbox.in .map .sp { fill: var(--c3); transition: fill 1s ease .7s; }
+body.all .map .sp { fill: var(--c3); }
+
+.spfacts { display: grid; gap: 22px; }
+.spfacts .ban .num { font-size: clamp(48px, 5.5vw, 72px); }
+.spfacts .ban .lbl { font-size: 19px; }
+@media (max-width: 700px) { .spgrid { grid-template-columns: 1fr; gap: 20px; } .mapbox { max-width: 240px; } }
+/* Die Frage im Rahmen */
+.qframe { position: relative; border: 1px solid var(--fg); padding: 34px 36px 30px; margin: 10px 0 34px; }
+.qlabel { position: absolute; top: -.75em; left: 28px; padding: 0 10px; background: var(--bg); font: 500 13px var(--mono); letter-spacing: .18em; text-transform: uppercase;
+  background-image: none; color: var(--sun-2); }
+.qframe::before { content: ""; position: absolute; left: -1px; right: -1px; bottom: -1px; height: 3px; background: var(--grad); }
+.answer { font-size: clamp(26px, 3vw, 38px); line-height: 1.3; max-width: 26em; margin-top: 8px; }
+.endbtns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+.endbtns button { font: 500 13px var(--mono); letter-spacing: .1em; text-transform: uppercase; background: none; color: var(--fg); border: 1px solid var(--dim); padding: 12px 16px; cursor: pointer; }
+.endbtns button:hover { border-color: var(--fg); }
+.endbtns button:focus-visible { outline: 1px solid var(--t-key); outline-offset: 2px; }
+/* Kapitelfolien: Frage am Anfang, Antwort am Ende */
+.chap-head { display: flex; align-items: baseline; gap: 22px; margin-bottom: 36px; }
+.chap-no { font: 300 clamp(80px, 10vw, 140px)/.8 var(--display); }
+.chap-t { font: 500 clamp(48px, 6vw, 84px)/.9 var(--display); text-transform: uppercase; letter-spacing: .02em; }
+.c1 .chap-no { color: var(--sun-1); } .c2 .chap-no { color: var(--sun-2); } .c3 .chap-no { color: var(--sun-3); }
+.qa { list-style: none; margin: 0; padding: 0; display: grid; gap: 26px; max-width: 760px; }
+.qa li { display: grid; gap: 6px; padding-top: 18px; position: relative; }
+.qa li::before { content: ""; position: absolute; left: 0; top: 0; width: 64px; height: 2px; background: var(--line); }
+.c1 .qa li::before { background: var(--sun-1); } .c2 .qa li::before { background: var(--sun-2); } .c3 .qa li::before { background: var(--sun-3); }
+.qa .q { font-size: clamp(24px, 2.6vw, 32px); line-height: 1.25; }
+.qa .a { font-size: clamp(20px, 2vw, 25px); line-height: 1.35; color: var(--t-key); font-weight: 600; }
+.qa li:has(.a) .q { font-size: clamp(19px, 1.8vw, 23px); transition: color .5s ease .15s; }
+/* Frage bleibt weiß, bis ihre Antwort erscheint; dann tritt sie zurück */
+.qa li:has(.a.in) .q, body.all .qa li:has(.a) .q { color: var(--muted); }
+/* Diagramm-Überschrift */
+.fig-h { font-size: 19px; color: var(--fg); margin: 0 0 8px; max-width: none; }
+.stars { color: var(--t-hl); letter-spacing: .08em; font-size: .95em; }
+/* Markt: Zahl links, Erklärung rechts */
+.banrows { display: grid; gap: 0; margin: 4px 0 20px; }
+.banrow { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 28px; align-items: center; padding: 14px 0; border-top: 1px solid var(--line); }
+.banrow .ban .num { font-size: clamp(48px, 5.2vw, 72px); }
+.banrow .ban .lbl { font-size: 17px; margin-top: 4px; color: var(--muted); }
+.banrow p { margin: 0; font-size: 18px; line-height: 1.45; color: var(--fg); max-width: 40em; }
+.src { font-size: 13px; }
+/* São Paulo: Ringe */
+.ring { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 20px; align-items: center; }
+.ring svg { width: 96px; height: 96px; transform: rotate(-90deg); overflow: visible; }
+.ring circle { fill: none; stroke-width: 10; }
+.ring .trk { stroke: #1A181C; }
+.ring .arc { stroke: var(--c3); stroke-dasharray: 263.9; stroke-dashoffset: 263.9; transition: stroke-dashoffset 1.4s cubic-bezier(.3,.6,.3,1); }
+.ring.in .arc { stroke-dashoffset: calc(263.9 * (1 - var(--p))); }
+.ring .num { font: 300 clamp(44px, 4.6vw, 62px)/1 var(--display); color: var(--t-pos); font-variant-numeric: tabular-nums; }
+.ring .num small { font-size: .45em; color: var(--muted); margin-left: 2px; }
+.ring .lbl { font-size: 18px; color: var(--fg); margin-top: 4px; }
+/* Plan B als Fluss */
+.flow { display: grid; justify-items: center; gap: 0; margin: 10px 0 22px; max-width: 860px; }
+.fbox { border: 1px solid var(--dim); padding: 12px 18px; font-size: 18px; line-height: 1.35; text-align: center; max-width: 360px; background: var(--bg); }
+.fbox.start { border-color: var(--fg); font-weight: 600; }
+.fbox.ok { border-color: var(--t-pos); } .fbox.no { border-color: var(--t-neg); } .fbox.alt { border-color: var(--t-cmp); }
+.fsplit { position: relative; width: 50%; height: 34px; }
+.fsplit::before { content: ""; position: absolute; left: 50%; top: 0; height: 17px; border-left: 1px solid var(--dim); }
+.fsplit i { position: absolute; top: 17px; height: 17px; width: 50%; border-top: 1px solid var(--dim); }
+.fsplit i:first-child { left: 0; border-left: 1px solid var(--dim); } .fsplit i:last-child { right: 0; border-right: 1px solid var(--dim); }
+.fcols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%; }
+.fcol { display: grid; justify-items: center; align-content: start; }
+.farrow { width: 1px; height: 22px; background: var(--dim); position: relative; }
+.farrow::after { content: ""; position: absolute; left: -4px; bottom: -1px; border: 4px solid transparent; border-top-color: var(--dim); border-bottom: 0; }
+/* Kommentar (nur im ganzen Bericht) */
+.dev { display: none; }
+body.all.devon .dev { display: block; margin: 18px 0 0; padding: 14px 18px; border-left: 3px solid var(--t-hl); background: #0E0D10; font-size: 17px; line-height: 1.5; color: var(--fg); max-width: 40em; }
+body.all.devon .dev b { display: block; font: 500 12px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--t-hl); margin-bottom: 6px; }
+@media (min-width: 1600px) {
+  body.all.devon .scene { position: relative; }
+  body.all.devon .dev { position: absolute; top: 0; left: calc(100% + 28px); width: min(260px, calc((100vw - 980px) / 2 - 48px)); margin: 0; font-size: 16px; }
+}
+.devbtn { position: fixed; z-index: 20; top: calc(28px + env(safe-area-inset-top, 0px)); right: calc(max(24px, env(safe-area-inset-right, 0px)) + 196px);
+  font: 500 12px var(--mono); letter-spacing: .12em; text-transform: uppercase; background: none; color: var(--t-hl); border: 1px solid var(--line); padding: 8px 12px; cursor: pointer; display: none; }
+body.all .devbtn { display: block; }
+.devbtn:focus-visible { outline: 1px solid var(--t-key); outline-offset: 2px; }
+body.all .qframe, body.all .fold { max-height: none; opacity: 1; }
+body.all .bar.win { fill: var(--c3); }
+body.all .ring .arc { stroke-dashoffset: calc(263.9 * (1 - var(--p))); transition: none; }
+body.all .tree::before { clip-path: inset(0 0 0 0) !important; }
+@media (max-width: 700px) {
+  .qframe { padding: 24px 18px 20px; }
+  .banrow { grid-template-columns: 1fr; gap: 6px; }
+  .ring { grid-template-columns: 72px minmax(0, 1fr); } .ring svg { width: 72px; height: 72px; }
+  .fcols { grid-template-columns: 1fr; } .fsplit { display: none; }
+  .devbtn { right: max(16px, env(safe-area-inset-right, 0px)); top: calc(56px + env(safe-area-inset-top, 0px)); }
+}
+#s4 .fig { margin-bottom: 8px; } #s4 .chart { max-height: 118px; }
+/* Kapitel: Köpfe stehen immer an derselben Stelle */
+.stage:has(.scene.chap.active) { align-content: start; }
+.chap { padding-top: clamp(32px, 9vh, 100px); }
+.c1 { --cc: var(--sun-1); } .c2 { --cc: var(--sun-2); } .c3 { --cc: var(--sun-3); }
+.chap .chap-head[data-step] { opacity: 1; transform: none; transition: none; }
+.chap-no { position: relative; display: inline-block; min-width: .6em; }
+.chap-no .d-new { display: inline-block; color: var(--cc); }
+.chap-no .d-old { position: absolute; left: 0; top: 0; color: var(--dim); }
+.chap-t { display: inline-block; }
+/* Einstieg: alte Ziffer grau → neue Ziffer → Farbe → Titel kommt aus der Zahl */
+.intro.active .d-old { animation: oldOut .35s ease .25s forwards; }
+.intro.active .d-new { opacity: 0; color: var(--dim); animation: newIn .4s ease .5s forwards, colorIn .5s ease .85s forwards; }
+.intro.active:not(:has(.d-old)) .d-new { animation: newIn .4s ease .1s forwards, colorIn .5s ease .3s forwards; }
+.intro.active .chap-t { opacity: 0; clip-path: inset(-30% 100% -30% 0); transform: translateX(-48px); animation: titleOut .7s cubic-bezier(.2,.7,.2,1) 1.2s forwards; }
+.intro.active:not(:has(.d-old)) .chap-t { animation-delay: .7s; }
+@keyframes oldOut { to { opacity: 0; transform: translateY(-14px); } }
+@keyframes newIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes colorIn { to { color: var(--cc); } }
+@keyframes titleOut { to { opacity: 1; clip-path: inset(-30% -10% -30% 0); transform: none; } }
+/* Abschied: Titel verschwindet in der Zahl, Zahl wird grau */
+.recap .chap-t { clip-path: inset(-30% -10% -30% 0); }
+.recap .chap-t, .recap .chap-no .d-new, .recap .qa { transition: opacity .45s ease, clip-path .55s cubic-bezier(.6,0,.4,1), transform .55s cubic-bezier(.6,0,.4,1), color .45s ease .3s; }
+.recap.leaving .chap-t { opacity: 0; clip-path: inset(-30% 100% -30% 0); transform: translateX(-48px); }
+.recap.leaving .qa { opacity: 0; }
+.recap.leaving .chap-no .d-new { color: var(--dim); }
+body.all .chap .d-old { display: none; }
+body.all .chap .d-new, body.all .chap .chap-t { animation: none !important; opacity: 1; clip-path: none; transform: none; color: var(--cc); }
+body.all .chap .chap-t { color: var(--fg); }
+@media (prefers-reduced-motion: reduce) {
+  .intro.active .d-old { display: none; }
+  .intro.active .d-new, .intro.active .chap-t { animation: none !important; opacity: 1; clip-path: none; transform: none; color: var(--cc); }
+  .intro.active .chap-t { color: var(--fg); }
+}
+
+/* Antwort im Rahmen */
+.aframe { border-color: var(--t-key); margin-top: 6px; }
+.aframe .qlabel { color: var(--t-key); }
+.aframe::before { display: none; }
+.ans { font: 300 clamp(32px, 4vw, 56px)/1.05 var(--display); text-transform: uppercase; margin: 0; max-width: none; text-wrap: balance; }
+.ans .key, .ans .pos { font-weight: 300; }
+/* Große Zahl mit Satz daneben */
+.hero-ban { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 28px; align-items: center; margin: 0 0 22px; }
+.hero-ban .num { font: 300 clamp(64px, 8vw, 112px)/.9 var(--display); font-variant-numeric: tabular-nums; }
+.hero-ban .num small { font-size: .4em; color: var(--muted); margin-left: 4px; }
+.hero-ban .neg-n { color: var(--t-neg); } .hero-ban .pos-n { color: var(--t-pos); }
+.hero-ban p { margin: 0; font-size: clamp(19px, 1.9vw, 23px); line-height: 1.4; max-width: 30em; }
+/* Zeitleiste */
+.timeline { margin: 0 0 20px; }
+.timeline ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.timeline li { border-top: 2px solid var(--t-neg); padding-top: 10px; display: grid; align-content: start; gap: 4px; font-size: 16px; line-height: 1.4; }
+.timeline li b { font: 500 13px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+.timeline li.later { border-top-style: dashed; }
+.timeline li span { color: var(--fg); }
+/* Säulen wachsen nach oben */
+.chart .vbar { transform: scaleY(0); transform-box: fill-box; transform-origin: center bottom; transition: transform 1s cubic-bezier(.2,.7,.2,1); }
+.chart .in .vbar { transform: scaleY(1); }
+.chart .gr { font-size: 12px; fill: var(--muted); }
+[aria-label="Onlinehandel"] .chart { max-height: 190px; }
+[aria-label="Onlinehandel"] .hero-ban { margin-bottom: 14px; }
+body.all .chart .vbar { transform: none; transition: none; }
+@media (max-width: 700px) {
+  .hero-ban { grid-template-columns: 1fr; gap: 8px; }
+  .timeline ol { grid-template-columns: 1fr; gap: 10px; }
+}
+
+/* Lehren */
+.lessons { display: grid; gap: 0; margin: 8px 0 24px; max-width: 820px; }
+.lesson { display: grid; grid-template-columns: minmax(0, 15em) minmax(0, 1fr); gap: 24px; padding: 16px 0; border-top: 1px solid var(--line); font-size: 18px; }
+.lesson b { font-weight: 600; }
+.lesson span { color: var(--muted); }
+.bans.one { grid-template-columns: minmax(0, 1fr); max-width: 560px; }
+.bans.two { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); max-width: 680px; }
+.ban .lbl { font-size: 21px; color: var(--fg); }
+.b-neg { fill: var(--c5); }
+
+/* ---------- Deckblatt (Variante A2) ---------- */
+.cover { position: fixed; inset: 0; z-index: 40; background: var(--bg); cursor: pointer; }
+.cover.gone { display: none; }
+.cover-logo { position: absolute; left: 50%; top: 46%; width: min(560px, 72vw); transform: translate(-50%, -50%);
+  transition: left 1s cubic-bezier(.6,0,.2,1), top 1s cubic-bezier(.6,0,.2,1), width 1s cubic-bezier(.6,0,.2,1), transform 1s cubic-bezier(.6,0,.2,1); }
+.cover-logo svg { display: block; width: 100%; height: auto; overflow: visible; }
+.cover .w-fall, .cover .w-studie, .cover .cut { transform-box: fill-box; transition: opacity .5s ease, transform .5s cubic-bezier(.2,.7,.2,1); }
+.cover.pre .cut { transform: scale(.02); transform-origin: 50% 50%; opacity: 0; }
+.cover.pre .w-fall { opacity: 0; transform: translateX(-40px); }
+.cover.pre .w-studie { opacity: 0; transform: translateX(40px); }
+.cover .cut { transition-duration: .45s; }
+.cover-title { position: absolute; left: 50%; top: calc(46% + min(560px, 72vw) * .3); transform: translateX(-50%); text-align: center; opacity: 0; transition: opacity .45s ease, transform .45s ease; }
+.cover-title .no { font: 500 14px var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.cover-title .name { font: 300 clamp(40px, 7vw, 84px)/1 var(--display); text-transform: uppercase; letter-spacing: .02em; margin-top: 8px; }
+.cover.show-title .cover-title { opacity: 1; }
+.cover.corner { background: transparent; pointer-events: none; }
+.cover.corner.corner .cover-logo { left: max(24px, env(safe-area-inset-left, 0px)); top: calc(24px + env(safe-area-inset-top, 0px)); width: 120px; transform: none; }
+.cover.corner.corner .cover-title { opacity: 0; transform: translate(-50%, -14px); }
+/* Szenario vor der Frage */
+.cover-ctx { position: absolute; left: 50%; top: 50%; width: min(760px, calc(100vw - 48px)); transform: translate(-50%, 0); opacity: 0; pointer-events: none; transition: opacity .6s ease .3s, transform .6s ease .3s; }
+.cover.context .cover-ctx { opacity: 1; transform: translate(-50%, 40px); pointer-events: auto; }
+.cover.context .cover-logo { top: 24%; width: min(360px, 56vw); }
+.cover.context .cover-title { top: calc(24% + min(360px, 56vw) * .3); }
+.ctx-k { font: 500 13px var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--sun-2); margin: 0 0 12px; }
+.ctx-t { font-size: clamp(19px, 1.9vw, 23px); line-height: 1.45; color: var(--fg); margin: 0 0 14px; max-width: none; }
+.ctx-t b { font-weight: 600; }
+.cover-ctx .go { font: 400 12px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); margin-top: 22px; animation: pulse 2.4s ease-in-out infinite; }
+.cover.corner .cover-ctx { opacity: 0; transition-delay: 0s; }
+.cover.context .cover-title { transition: opacity .45s ease, transform .45s ease, top 1s cubic-bezier(.6,0,.2,1); }
+.cover-title { transition: opacity .45s ease, transform .45s ease, top 1s cubic-bezier(.6,0,.2,1); }
+/* Ruhezustand vor dem Start */
+.cover-rest { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; display: grid; gap: 14px; transition: opacity .4s ease; }
+.cover-rest .who { font: 500 clamp(18px, 1.8vw, 24px) var(--mono); letter-spacing: .16em; text-transform: none; color: var(--fg); }
+.cover-rest .what { font: 300 clamp(48px, 7vw, 92px)/1 var(--display); text-transform: uppercase; letter-spacing: .03em; color: var(--fg); }
+.cover-rest .go { font: 400 12px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); margin-top: 26px; animation: pulse 2.4s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .35; } }
+.cover.started .cover-rest { opacity: 0; pointer-events: none; }
+.choice { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 34px; }
+.pick { font: 500 14px var(--mono); letter-spacing: .1em; text-transform: uppercase; background: none; color: var(--fg); border: 1px solid var(--dim); padding: 14px 20px; cursor: pointer; transition: border-color .2s, color .2s, background .2s; }
+.pick:hover { border-color: var(--fg); }
+.pick.main { border-color: var(--sun-2); color: var(--sun-2); }
+.pick.main:hover { background: var(--sun-2); color: var(--bg); }
+.pick:focus-visible, .fs input:focus-visible { outline: 1px solid var(--sun-2); outline-offset: 3px; }
+.fs { display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; font: 400 12px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); cursor: pointer; }
+.fs input { accent-color: var(--sun-2); width: 15px; height: 15px; }
+.cover-rest .go { display: none; }
+.cover.waiting { cursor: default; }
+/* Logo: FALL/STUDIE auf Deutsch, CASE/STUDY auf Englisch */
+.lg-en { display: none; }
+html[lang="en"] .lg-en { display: inline; }
+html[lang="en"] .lg-de { display: none; }
+/* Sprachwahl auf dem Startbildschirm */
+.cover-lang { position: absolute; top: calc(28px + env(safe-area-inset-top, 0px)); right: max(24px, env(safe-area-inset-right, 0px)); display: flex; align-items: center; gap: 10px; font: 500 13px var(--mono); letter-spacing: .14em; color: var(--dim); transition: opacity .3s ease; }
+.cover-lang button { font: inherit; letter-spacing: inherit; color: var(--muted); background: none; border: 0; padding: 6px 2px; cursor: pointer; }
+.cover-lang button:hover, .cover-lang button[aria-pressed="true"] { color: var(--fg); }
+.cover-lang button[aria-pressed="true"] { box-shadow: inset 0 -1px 0 var(--fg); }
+.cover-lang button:focus-visible { outline: 1px solid var(--sun-2); outline-offset: 3px; }
+.cover.started .cover-lang { opacity: 0; pointer-events: none; }
+.lang-note { margin: 6px 0 0; font: 400 12px var(--mono); letter-spacing: .08em; color: var(--muted); }
+.lang-note:empty { display: none; }
+.cover-rest [data-i18n] { transition: opacity .2s ease; }
+body.swap .cover-rest [data-i18n] { opacity: 0; }
+@media (max-width: 700px) { .cover-lang { top: calc(16px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); } }
+.cover.waiting .cover-logo { opacity: 0; }
+.cover.started .cover-logo { opacity: 1; transition: opacity .3s ease, left 1s cubic-bezier(.6,0,.2,1), top 1s cubic-bezier(.6,0,.2,1), width 1s cubic-bezier(.6,0,.2,1), transform 1s cubic-bezier(.6,0,.2,1); }
+body.covered .brand, body.covered .mode, body.covered .nav, body.covered .hint, body.covered .stage { visibility: hidden; }
+body.covered.reveal .mode, body.covered.reveal .nav, body.covered.reveal .hint, body.covered.reveal .stage { visibility: visible; opacity: 0; animation: fadein .7s ease .35s forwards; }
+@keyframes fadein { to { opacity: 1; } }
+@media (max-width: 700px) { .cover.corner .cover-logo { width: 84px; left: max(16px, env(safe-area-inset-left, 0px)); top: calc(16px + env(safe-area-inset-top, 0px)); } }
+@media (prefers-reduced-motion: reduce) { .cover, .cover * { transition-duration: .01s !important; } }
+
+/* Äste ohne eigene Linie, die Verlaufslinie darüber trägt die Farbe */
+.branch, .branch.in { border-top: 0 !important; }
+.branch { transition-delay: .9s; } .branch.in { transition-delay: 0s; }
+
+/* ---------- Navigation unten ---------- */
+.nav {
+  position: fixed; z-index: 20; left: 0; right: 0; bottom: 0;
+  padding: 0 max(24px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(24px, env(safe-area-inset-left, 0px));
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 20px;
+}
+.count { font: 500 13px var(--mono); color: var(--muted); letter-spacing: .1em; font-variant-numeric: tabular-nums; min-width: 4.5em; }
+.count b { color: var(--fg); font-weight: 500; }
+.bar-track { height: 2px; background: var(--line); position: relative; overflow: hidden; }
+.bar-track i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--grad); transition: width .4s ease; }
+.btns { display: flex; gap: 8px; }
+.nav button { font: 500 13px var(--mono); letter-spacing: .1em; text-transform: uppercase; background: none; color: var(--fg); border: 1px solid var(--line); padding: 10px 14px; cursor: pointer; }
+.nav button:hover { border-color: var(--dim); }
+.nav button:disabled { color: var(--dim); cursor: default; }
+.hint { position: fixed; z-index: 19; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); left: 0; right: 0; text-align: center; font: 400 12px var(--mono); color: var(--dim); letter-spacing: .1em; transition: opacity .4s; }
+
+/* ---------- Ganzer Bericht (alles auf einmal) ---------- */
+html:has(body.all) { height: auto; }
+body.all { height: auto; overflow: visible; }
+body.all .stage { position: static; display: block; cursor: default; overflow: visible; padding: 120px max(24px, env(safe-area-inset-right, 0px)) 120px max(24px, env(safe-area-inset-left, 0px)); }
+body.all .scene { display: block; margin: 0 auto 120px; }
+body.all [data-step] { opacity: 1; transform: none; transition: none; }
+body.all .chart .bar { transform: none; transition: none; }
+body.all .chart .v, body.all .chart .ref { opacity: 1; transition: none; }
+body.all .nav, body.all .hint { display: none; }
+body.all .brand { position: fixed; }
+
+@media (max-width: 700px) {
+  body { font-size: 18px; }
+  .brand { width: 84px; top: calc(16px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); }
+  .mode { top: calc(18px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); padding: 6px 9px; font-size: 11px; }
+  .stage { top: calc(80px + env(safe-area-inset-top, 0px)); align-content: start; padding: 8px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px)); }
+  .bans { grid-template-columns: 1fr; gap: 18px; }
+  .tree { grid-template-columns: 1fr; gap: 10px; }
+  .branch { font-size: 16px; }
+  .branch b { font-size: 21px; }
+  .lesson { grid-template-columns: 1fr; gap: 4px; font-size: 16px; }
+  .chart { min-width: 0; }
+  .chart text { font-size: 15px; }
+  .kpi { font-size: 17px; }
+  .nav { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .nav button { padding: 9px 11px; }
+  .hint { display: none; }
+  body::after { content: ""; position: fixed; z-index: 15; inset: 0 0 auto; height: calc(76px + env(safe-area-inset-top, 0px)); background: var(--bg); }
+  .stage { scroll-padding-top: 90px; scroll-padding-bottom: 90px; }
+}
+</style>
+
+<div class="cover" id="cover">
+  <div class="cover-lang" role="group" aria-label="Sprache / Language"><button type="button" data-set-lang="de" lang="de" aria-pressed="true">DE</button><span aria-hidden="true">·</span><button type="button" data-set-lang="en" lang="en" aria-pressed="false">EN</button></div>
+  <div class="cover-logo" id="coverLogo" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" class="logo-svg" role="img" data-i18n-aria="logo" aria-label="Fallstudie" viewBox="248 18 664 340"><defs><linearGradient id="fsg2" gradientUnits="userSpaceOnUse" x1="600" y1="28" x2="425" y2="345"><stop offset="0" stop-color="#FFE14D"/><stop offset="0.5" stop-color="#FF7A1A"/><stop offset="1" stop-color="#FF2D95"/></linearGradient></defs><g class="w-fall"><g transform="matrix(1 0 -0.2126 1 23.59 0)"><path class="lg-de" fill="#F2F2F2" d="M280.9304064512253 182.0V40.203125H321.18493139743805V52.09106606245041H295.441073179245V99.87114441394806H319.68150049448013V111.95618402957916H295.441073179245V182.0ZM328.3565099835396 182.0 350.4431923031807 40.203125H367.0155506134033L391.2516211271286 182.0H377.375424683094L373.05937844514847 153.99457824230194H346.17182540893555L342.2140105366707 182.0ZM347.88098978996277 142.50946921110153H371.18044632673264L359.15450382232666 64.95721232891083H358.94877034425735ZM405.1115587949753 182.0V40.203125H419.702791929245V170.1293287873268H445.41931933164597V182.0ZM457.2521837949753 182.0V40.203125H471.843416929245V170.1293287873268H497.55994433164597V182.0Z"/><path class="lg-en" fill="#F2F2F2" d="M307.5831413793564 183.6559287905693Q297.2346756386757 183.6559287905693 291.4173375594616 178.51263117790222Q285.5999994802475 173.36933356523514 283.26499974012376 163.40500396490097Q280.93 153.4406743645668 280.93 139.07109719514847V81.1668251156807Q280.93 71.96498495340347 281.99463313102723 64.17234387993813Q283.05926626205445 56.37970280647278 285.92729558825494 50.62783968448639Q288.7953249144554 44.8759765625 294.1565953719616 41.70223844051361Q299.5178658294678 38.52850031852722 308.1111404824257 38.52850031852722Q316.5533432888985 38.52850031852722 321.62831386208535 41.649002850055695Q326.7032844352722 44.76950538158417 329.2979662644863 50.44151511788368Q331.8926480937004 56.1135248541832 332.7465172636509 63.79969474673271Q333.6003864336014 71.48586463928223 333.6003864336014 80.61719936132431V94.78112173080444H319.1156244802475V79.9252153635025Q319.1156244802475 65.56142103672028 317.16836532235146 58.23997837305069Q315.2211061644554 50.9185357093811 308.075174741745 50.9185357093811Q300.598342769146 50.9185357093811 298.05978795170785 58.293213963508606Q295.5212331342697 65.66789221763611 295.5212331342697 79.8446489572525V139.2221690416336Q295.5212331342697 150.75750422477722 296.4434293437004 157.86386546492577Q297.3656255531311 164.9702267050743 299.98474677681924 168.19430899620056Q302.60386800050736 171.4183912873268 307.591776304245 171.4183912873268Q314.8182741332054 171.4183912873268 316.96694930672646 163.94948121905327Q319.1156244802475 156.48057115077972 319.1156244802475 139.213534116745V125.4452348947525H333.6536220240593V139.0883670449257Q333.6536220240593 153.55578047037125 331.5020554292202 163.5114751458168Q329.3504888343811 173.46716982126236 323.71226643800736 178.56154930591583Q318.0740440416336 183.6559287905693 307.5831413793564 183.6559287905693ZM344.18451093912125 182.0 366.27119325876237 40.203125H382.843551568985L407.0796220827103 182.0H393.2034256386757L388.88737940073014 153.99457824230194H361.9998263645172L358.04201149225236 182.0ZM363.70899074554444 142.50946921110153H387.0084472823143L374.98250477790833 64.95721232891083H374.776771299839ZM442.41775523900986 183.611328125Q433.86908125162125 183.611328125 428.6689436066151 180.36565852165222Q423.4688059616089 177.11998891830444 420.78420978069306 171.273893982172Q418.09961359977723 165.42779904603958 417.17381294846535 157.5812093615532Q416.2480122971535 149.7346196770668 416.2480122971535 140.48817884922028V126.31570023298264H430.4637442159653V140.73708695173264Q430.4637442159653 157.1164674758911 432.81454842567445 164.22282871603966Q435.1653526353836 171.3291899561882 442.8306482362747 171.3291899561882Q448.17678790569306 171.3291899561882 450.58082770586014 168.763304322958Q452.98486750602723 166.19741868972778 453.62939875602723 160.61821472644806Q454.27393000602723 155.03901076316833 454.27393000602723 145.98539036512375Q454.27393000602723 135.83117109537125 451.2181500720978 129.0369751751423Q448.16237013816834 122.24277925491333 441.5904645252228 115.92263382673264L432.7209509539604 107.34084618091583Q428.7645621228218 103.4837196469307 424.75351166009904 98.69936642050743Q420.74246119737626 93.91501319408417 418.04277356743813 87.69341704249382Q415.3430859375 81.47182089090347 415.3430859375 73.42381519079208Q415.3430859375 62.92427760362625 417.4011337387562 55.05538758635521Q419.45918154001237 47.18649756908417 425.15135254740716 42.79059794545174Q430.84352355480195 38.394698321819305 441.69265758275986 38.394698321819305Q450.34922879219056 38.394698321819305 455.38391616225243 41.53750118613243Q460.4186035323143 44.68030405044556 462.82121729135514 50.39691445231438Q465.223831050396 56.1135248541832 465.90793248295785 63.830630004405975Q466.5920339155197 71.54773515462875 466.5920339155197 80.73230546712875V88.93138301372528H452.97765862226487V79.71227300167084Q452.97765862226487 69.11355179548264 452.0770497250557 62.77760189771652Q451.17644082784653 56.44165199995041 448.793988339901 53.6131928563118Q446.4115358519554 50.78473371267319 441.76458906412125 50.78473371267319Q437.4485428261757 50.78473371267319 434.7308723258972 52.704662054777145Q432.01320182561875 54.6245903968811 430.795357786417 59.1111173927784Q429.5775137472153 63.59764438867569 429.5775137472153 71.40965503454208Q429.5775137472153 77.55282384157181 431.01907413482667 81.43438977003098Q432.46063452243806 85.31595569849014 435.4020213711262 88.56594276428223Q438.3434082198143 91.81592983007431 442.65945445775986 96.26577806472778L451.5002111721039 105.38277369737625Q459.33384846925736 113.32288217544556 464.0642530846596 123.06638684868813Q468.7946577000618 132.8098915219307 468.7946577000618 146.29323822259903Q468.7946577000618 157.6243446469307 466.6963266956806 166.0118858218193Q464.59799569129945 174.39942699670792 458.9324424791336 179.00537756085396Q453.2668892669678 183.611328125 442.41775523900986 183.611328125ZM484.44004803180695 182.0V40.203125H524.6240675377846V52.0464653968811H499.03128116607667V103.64049565792084H523.1825071501733V115.66366475820541H499.03128116607667V170.0847281217575H524.6945729780198V182.0Z"/></g></g><g class="w-studie"><g transform="matrix(1 0 -0.2126 1 48.68 0)"><path class="lg-de" fill="#F2F2F2" d="M571.8710042834282 301.611328125Q563.3223302960396 301.611328125 558.1221926510334 298.3656585216522Q552.9220550060272 295.11998891830444 550.2374588251114 289.273893982172Q547.5528626441956 283.4277990460396 546.6270619928837 275.5812093615532Q545.7012613415718 267.7346196770668 545.7012613415718 258.4881788492203V244.31570023298264H559.9169932603836V258.73708695173264Q559.9169932603836 275.1164674758911 562.2677974700928 282.22282871603966Q564.6186016798019 289.3291899561882 572.283897280693 289.3291899561882Q577.6300369501114 289.3291899561882 580.0340767502785 286.763304322958Q582.4381165504456 284.1974186897278 583.0826478004456 278.61821472644806Q583.7271790504456 273.03901076316833 583.7271790504456 263.98539036512375Q583.7271790504456 253.83117109537125 580.6713991165161 247.0369751751423Q577.6156191825867 240.24277925491333 571.0437135696411 233.92263382673264L562.1741999983788 225.34084618091583Q558.2178111672401 221.4837196469307 554.2067607045174 216.69936642050743Q550.1957102417946 211.91501319408417 547.4960226118565 205.69341704249382Q544.7963349819183 199.47182089090347 544.7963349819183 191.42381519079208Q544.7963349819183 180.92427760362625 546.8543827831745 173.0553875863552Q548.9124305844307 165.18649756908417 554.6046015918255 160.79059794545174Q560.2967725992203 156.3946983218193 571.1459066271782 156.3946983218193Q579.8024778366089 156.3946983218193 584.8371652066708 159.53750118613243Q589.8718525767326 162.68030405044556 592.2744663357735 168.39691445231438Q594.6770800948143 174.1135248541832 595.3611815273762 181.83063000440598Q596.045282959938 189.54773515462875 596.045282959938 198.73230546712875V206.93138301372528H582.4309076666832V197.71227300167084Q582.4309076666832 187.11355179548264 581.530298769474 180.77760189771652Q580.6296898722649 174.4416519999504 578.2472373843193 171.6131928563118Q575.8647848963737 168.7847337126732 571.2178381085396 168.7847337126732Q566.901791870594 168.7847337126732 564.1841213703156 170.70466205477715Q561.4664508700371 172.6245903968811 560.2486068308353 177.1111173927784Q559.0307627916336 181.5976443886757 559.0307627916336 189.40965503454208Q559.0307627916336 195.5528238415718 560.472323179245 199.43438977003098Q561.9138835668564 203.31595569849014 564.8552704155445 206.56594276428223Q567.7966572642326 209.8159298300743 572.1127035021782 214.26577806472778L580.9534602165222 223.38277369737625Q588.7870975136757 231.32288217544556 593.5175021290779 241.06638684868813Q598.2479067444801 250.8098915219307 598.2479067444801 264.29323822259903Q598.2479067444801 275.6243446469307 596.149575740099 284.0118858218193Q594.0512447357178 292.3994269967079 588.3856915235519 297.00537756085396Q582.7201383113861 301.611328125 571.8710042834282 301.611328125ZM618.6683416962624 300.0V170.0464653968811H603.3981162905693V158.203125H647.186076104641V170.0464653968811H633.1790084242821V300.0ZM684.9074885475225 301.6559287905693Q674.6488233804703 301.6559287905693 668.8091849684715 297.5067588686943Q662.9695465564728 293.3575889468193 660.5626153349876 284.90832278454627Q658.1556841135025 276.45905662227324 658.1556841135025 263.583984375V158.203125H672.7469172477722V263.18115234375Q672.7469172477722 271.5183100104332 673.3468478322029 277.4104316532612Q673.9467784166336 283.3025532960892 676.5226040782056 286.38277262449265Q679.0984297397778 289.4629919528961 684.9369679060079 289.4629919528961Q690.8613669276237 289.4629919528961 693.3416556715965 286.38277262449265Q695.8219444155693 283.3025532960892 696.3456260561943 277.4507148563862Q696.8693076968193 271.5988764166832 696.8693076968193 263.26171875V158.203125H711.4159401655197V263.583984375Q711.4159401655197 276.45905662227324 709.0895753502846 284.90832278454627Q706.7632105350494 293.3575889468193 701.0041385293007 297.5067588686943Q695.2450665235519 301.6559287905693 684.9074885475225 301.6559287905693ZM732.9181994199753 300.0V158.203125H757.4277354478836Q768.7257282137871 158.203125 774.7854785323143 162.97955632209778Q780.8452288508415 167.75598764419556 783.162958741188 176.59238755702972Q785.4806886315346 185.4287874698639 785.4806886315346 197.57704496383667L785.5252892971039 259.1715279221535Q785.5252892971039 273.69217693805695 782.7371133565903 282.68396615982056Q779.9489374160767 291.67575538158417 773.6697882115841 295.8378776907921Q767.3906390070915 300.0 756.8997363448143 300.0ZM747.428866147995 287.9480740427971H756.5803228020668Q761.415733218193 287.9480740427971 764.5945018231869 285.77638551592827Q767.7732704281807 283.60469698905945 769.3536632955074 277.5773473083973Q770.9340561628342 271.54999762773514 770.9340561628342 260.0592631101608V196.77858978509903Q770.9340561628342 182.3615598678589 767.576171875 176.16947293281555Q764.2182875871658 169.97738599777222 756.904014468193 169.97738599777222H747.428866147995ZM806.4002871513367 300.0V158.203125H820.9915202856064V300.0ZM843.8864611387253 300.0V158.203125H884.0704806447029V170.0464653968811H858.477694272995V221.64049565792084H882.6289202570915V233.6636647582054H858.477694272995V288.0847281217575H884.140986084938V300.0Z"/><path class="lg-en" fill="#F2F2F2" d="M599.00266930151 301.611328125Q590.4539953141214 301.611328125 585.2538576691152 298.3656585216522Q580.053720024109 295.11998891830444 577.3691238431932 289.273893982172Q574.6845276622773 283.4277990460396 573.7587270109655 275.5812093615532Q572.8329263596536 267.7346196770668 572.8329263596536 258.4881788492203V244.31570023298264H587.0486582784654V258.73708695173264Q587.0486582784654 275.1164674758911 589.3994624881745 282.22282871603966Q591.7502666978837 289.3291899561882 599.4155622987748 289.3291899561882Q604.7617019681932 289.3291899561882 607.1657417683602 286.763304322958Q609.5697815685273 284.1974186897278 610.2143128185273 278.61821472644806Q610.8588440685273 273.03901076316833 610.8588440685273 263.98539036512375Q610.8588440685273 253.83117109537125 607.8030641345979 247.0369751751423Q604.7472842006684 240.24277925491333 598.1753785877229 233.92263382673264L589.3058650164605 225.34084618091583Q585.3494761853219 221.4837196469307 581.3384257225991 216.69936642050743Q577.3273752598764 211.91501319408417 574.6276876299382 205.69341704249382Q571.9280000000001 199.47182089090347 571.9280000000001 191.42381519079208Q571.9280000000001 180.92427760362625 573.9860478012563 173.0553875863552Q576.0440956025125 165.18649756908417 581.7362666099073 160.79059794545174Q587.428437617302 156.3946983218193 598.27757164526 156.3946983218193Q606.9341428546907 156.3946983218193 611.9688302247525 159.53750118613243Q617.0035175948144 162.68030405044556 619.4061313538552 168.39691445231438Q621.8087451128961 174.1135248541832 622.492846545458 181.83063000440598Q623.1769479780198 189.54773515462875 623.1769479780198 198.73230546712875V206.93138301372528H609.562572684765V197.71227300167084Q609.562572684765 187.11355179548264 608.6619637875558 180.77760189771652Q607.7613548903466 174.4416519999504 605.3789024024011 171.6131928563118Q602.9964499144555 168.7847337126732 598.3495031266214 168.7847337126732Q594.0334568886758 168.7847337126732 591.3157863883973 170.70466205477715Q588.5981158881189 172.6245903968811 587.3802718489171 177.1111173927784Q586.1624278097154 181.5976443886757 586.1624278097154 189.40965503454208Q586.1624278097154 195.5528238415718 587.6039881973268 199.43438977003098Q589.0455485849382 203.31595569849014 591.9869354336263 206.56594276428223Q594.9283222823144 209.8159298300743 599.24436852026 214.26577806472778L608.085125234604 223.38277369737625Q615.9187625317575 231.32288217544556 620.6491671471597 241.06638684868813Q625.3795717625619 250.8098915219307 625.3795717625619 264.29323822259903Q625.3795717625619 275.6243446469307 623.2812407581807 284.0118858218193Q621.1829097537995 292.3994269967079 615.5173565416337 297.00537756085396Q609.8518033294679 301.611328125 599.00266930151 301.611328125ZM645.8000067143441 300.0V170.0464653968811H630.5297813086511V158.203125H674.3177411227227V170.0464653968811H660.3106734423638V300.0ZM712.0391535656042 301.6559287905693Q701.780488398552 301.6559287905693 695.9408499865533 297.5067588686943Q690.1012115745546 293.3575889468193 687.6942803530694 284.90832278454627Q685.2873491315843 276.45905662227324 685.2873491315843 263.583984375V158.203125H699.878582265854V263.18115234375Q699.878582265854 271.5183100104332 700.4785128502847 277.4104316532612Q701.0784434347154 283.3025532960892 703.6542690962874 286.38277262449265Q706.2300947578595 289.4629919528961 712.0686329240897 289.4629919528961Q717.9930319457055 289.4629919528961 720.4733206896783 286.38277262449265Q722.9536094336511 283.3025532960892 723.4772910742761 277.4507148563862Q724.0009727149011 271.5988764166832 724.0009727149011 263.26171875V158.203125H738.5476051836015V263.583984375Q738.5476051836015 276.45905662227324 736.2212403683664 284.90832278454627Q733.8948755531312 293.3575889468193 728.1358035473825 297.5067588686943Q722.3767315416337 301.6559287905693 712.0391535656042 301.6559287905693ZM760.049864438057 300.0V158.203125H784.5594004659654Q795.8573932318689 158.203125 801.9171435503961 162.97955632209778Q807.9768938689233 167.75598764419556 810.2946237592698 176.59238755702972Q812.6123536496164 185.4287874698639 812.6123536496164 197.57704496383667L812.6569543151857 259.1715279221535Q812.6569543151857 273.69217693805695 809.868778374672 282.68396615982056Q807.0806024341584 291.67575538158417 800.8014532296659 295.8378776907921Q794.5223040251733 300.0 784.0314013628961 300.0ZM774.5605311660768 287.9480740427971H783.7119878201486Q788.5473982362748 287.9480740427971 791.7261668412687 285.77638551592827Q794.9049354462625 283.60469698905945 796.4853283135892 277.5773473083973Q798.065721180916 271.54999762773514 798.065721180916 260.0592631101608V196.77858978509903Q798.065721180916 182.3615598678589 794.7078368930818 176.16947293281555Q791.3499526052476 169.97738599777222 784.0356794862748 169.97738599777222H774.5605311660768ZM847.3965829281808 300.0V239.27455633878708L822.3116737275125 158.203125H836.8496712713243L854.61595055151 218.07394713163376H854.9022504358293L870.2055108218194 158.203125H884.9765726594926L861.9878160624505 239.23859059810638V300.0Z"/></g></g><g class="cut"><polygon class="lg-de" points="600,28 508.1,184.1 425,345 516.9,188.9" fill="url(#fsg2)"/><polygon class="lg-en" transform="translate(27.13 0)" points="600,28 508.1,184.1 425,345 516.9,188.9" fill="url(#fsg2)"/></g></svg></div>
+  <div class="cover-title"><div data-i18n="cover_1" class="no">Fallstudie 01</div><div data-i18n="cover_2" class="name">Magist</div></div>
+  <div class="cover-ctx" id="coverCtx">
+    <p data-i18n="cover_3" class="ctx-k">Das Szenario</p>
+    <p data-i18n="cover_4" class="ctx-t">Ein Rollenspiel aus meiner Weiterbildung Data Analytics &amp; AI. Wir sind das Datenteam von <b>Eniac</b>, einem Onlinehändler für Apple-Produkte und Zubehör. Eniac will nach Brasilien, über den Marktplatz <b>Magist</b>.</p>
+    <p data-i18n="cover_5" class="ctx-t">Zu dritt sollten wir mit Magists Daten eine Entscheidung vorbereiten und sie dem CEO präsentieren. Dies ist meine eigene Neuauflage: alles neu gerechnet, neu gedacht.</p>
+    <p data-i18n="cover_6" class="go">Geht von selbst weiter · Klick für sofort</p>
+  </div>
+  <div class="cover-rest" id="coverRest">
+    <div class="who">Tim Aßmann</div>
+    <div class="what" data-i18n="what">Datenanalytiker</div>
+    <div class="who" data-i18n="portfolio">Portfolio</div>
+    <div class="choice" role="group" data-i18n-aria="choice" aria-label="Wie möchtest du den Bericht sehen?">
+      <button type="button" class="pick main" data-mode="auto" data-i18n="pick_auto">▶ Abspielen</button>
+      <button type="button" class="pick" data-mode="manual" data-i18n="pick_manual">Selbst durchklicken</button>
+      <button type="button" class="pick" data-mode="all" data-i18n="pick_all">Ganzer Bericht</button>
+    </div>
+    <label class="fs"><input type="checkbox" id="fsOn" checked> <span data-i18n="fs">im Vollbild</span></label>
+  </div>
+</div>
+<a class="brand" href="#s1" data-i18n-aria="brand" aria-label="Fallstudie, zum Anfang"><svg xmlns="http://www.w3.org/2000/svg" class="logo-svg" role="img" data-i18n-aria="logo" aria-label="Fallstudie" viewBox="248 18 664 340"><defs><linearGradient id="fsg" gradientUnits="userSpaceOnUse" x1="600" y1="28" x2="425" y2="345"><stop offset="0" stop-color="#FFE14D"/><stop offset="0.5" stop-color="#FF7A1A"/><stop offset="1" stop-color="#FF2D95"/></linearGradient></defs><g transform="matrix(1 0 -0.2126 1 23.59 0)"><path class="lg-de" fill="#F2F2F2" d="M280.9304064512253 182.0V40.203125H321.18493139743805V52.09106606245041H295.441073179245V99.87114441394806H319.68150049448013V111.95618402957916H295.441073179245V182.0ZM328.3565099835396 182.0 350.4431923031807 40.203125H367.0155506134033L391.2516211271286 182.0H377.375424683094L373.05937844514847 153.99457824230194H346.17182540893555L342.2140105366707 182.0ZM347.88098978996277 142.50946921110153H371.18044632673264L359.15450382232666 64.95721232891083H358.94877034425735ZM405.1115587949753 182.0V40.203125H419.702791929245V170.1293287873268H445.41931933164597V182.0ZM457.2521837949753 182.0V40.203125H471.843416929245V170.1293287873268H497.55994433164597V182.0Z"/><path class="lg-en" fill="#F2F2F2" d="M307.5831413793564 183.6559287905693Q297.2346756386757 183.6559287905693 291.4173375594616 178.51263117790222Q285.5999994802475 173.36933356523514 283.26499974012376 163.40500396490097Q280.93 153.4406743645668 280.93 139.07109719514847V81.1668251156807Q280.93 71.96498495340347 281.99463313102723 64.17234387993813Q283.05926626205445 56.37970280647278 285.92729558825494 50.62783968448639Q288.7953249144554 44.8759765625 294.1565953719616 41.70223844051361Q299.5178658294678 38.52850031852722 308.1111404824257 38.52850031852722Q316.5533432888985 38.52850031852722 321.62831386208535 41.649002850055695Q326.7032844352722 44.76950538158417 329.2979662644863 50.44151511788368Q331.8926480937004 56.1135248541832 332.7465172636509 63.79969474673271Q333.6003864336014 71.48586463928223 333.6003864336014 80.61719936132431V94.78112173080444H319.1156244802475V79.9252153635025Q319.1156244802475 65.56142103672028 317.16836532235146 58.23997837305069Q315.2211061644554 50.9185357093811 308.075174741745 50.9185357093811Q300.598342769146 50.9185357093811 298.05978795170785 58.293213963508606Q295.5212331342697 65.66789221763611 295.5212331342697 79.8446489572525V139.2221690416336Q295.5212331342697 150.75750422477722 296.4434293437004 157.86386546492577Q297.3656255531311 164.9702267050743 299.98474677681924 168.19430899620056Q302.60386800050736 171.4183912873268 307.591776304245 171.4183912873268Q314.8182741332054 171.4183912873268 316.96694930672646 163.94948121905327Q319.1156244802475 156.48057115077972 319.1156244802475 139.213534116745V125.4452348947525H333.6536220240593V139.0883670449257Q333.6536220240593 153.55578047037125 331.5020554292202 163.5114751458168Q329.3504888343811 173.46716982126236 323.71226643800736 178.56154930591583Q318.0740440416336 183.6559287905693 307.5831413793564 183.6559287905693ZM344.18451093912125 182.0 366.27119325876237 40.203125H382.843551568985L407.0796220827103 182.0H393.2034256386757L388.88737940073014 153.99457824230194H361.9998263645172L358.04201149225236 182.0ZM363.70899074554444 142.50946921110153H387.0084472823143L374.98250477790833 64.95721232891083H374.776771299839ZM442.41775523900986 183.611328125Q433.86908125162125 183.611328125 428.6689436066151 180.36565852165222Q423.4688059616089 177.11998891830444 420.78420978069306 171.273893982172Q418.09961359977723 165.42779904603958 417.17381294846535 157.5812093615532Q416.2480122971535 149.7346196770668 416.2480122971535 140.48817884922028V126.31570023298264H430.4637442159653V140.73708695173264Q430.4637442159653 157.1164674758911 432.81454842567445 164.22282871603966Q435.1653526353836 171.3291899561882 442.8306482362747 171.3291899561882Q448.17678790569306 171.3291899561882 450.58082770586014 168.763304322958Q452.98486750602723 166.19741868972778 453.62939875602723 160.61821472644806Q454.27393000602723 155.03901076316833 454.27393000602723 145.98539036512375Q454.27393000602723 135.83117109537125 451.2181500720978 129.0369751751423Q448.16237013816834 122.24277925491333 441.5904645252228 115.92263382673264L432.7209509539604 107.34084618091583Q428.7645621228218 103.4837196469307 424.75351166009904 98.69936642050743Q420.74246119737626 93.91501319408417 418.04277356743813 87.69341704249382Q415.3430859375 81.47182089090347 415.3430859375 73.42381519079208Q415.3430859375 62.92427760362625 417.4011337387562 55.05538758635521Q419.45918154001237 47.18649756908417 425.15135254740716 42.79059794545174Q430.84352355480195 38.394698321819305 441.69265758275986 38.394698321819305Q450.34922879219056 38.394698321819305 455.38391616225243 41.53750118613243Q460.4186035323143 44.68030405044556 462.82121729135514 50.39691445231438Q465.223831050396 56.1135248541832 465.90793248295785 63.830630004405975Q466.5920339155197 71.54773515462875 466.5920339155197 80.73230546712875V88.93138301372528H452.97765862226487V79.71227300167084Q452.97765862226487 69.11355179548264 452.0770497250557 62.77760189771652Q451.17644082784653 56.44165199995041 448.793988339901 53.6131928563118Q446.4115358519554 50.78473371267319 441.76458906412125 50.78473371267319Q437.4485428261757 50.78473371267319 434.7308723258972 52.704662054777145Q432.01320182561875 54.6245903968811 430.795357786417 59.1111173927784Q429.5775137472153 63.59764438867569 429.5775137472153 71.40965503454208Q429.5775137472153 77.55282384157181 431.01907413482667 81.43438977003098Q432.46063452243806 85.31595569849014 435.4020213711262 88.56594276428223Q438.3434082198143 91.81592983007431 442.65945445775986 96.26577806472778L451.5002111721039 105.38277369737625Q459.33384846925736 113.32288217544556 464.0642530846596 123.06638684868813Q468.7946577000618 132.8098915219307 468.7946577000618 146.29323822259903Q468.7946577000618 157.6243446469307 466.6963266956806 166.0118858218193Q464.59799569129945 174.39942699670792 458.9324424791336 179.00537756085396Q453.2668892669678 183.611328125 442.41775523900986 183.611328125ZM484.44004803180695 182.0V40.203125H524.6240675377846V52.0464653968811H499.03128116607667V103.64049565792084H523.1825071501733V115.66366475820541H499.03128116607667V170.0847281217575H524.6945729780198V182.0Z"/></g><g transform="matrix(1 0 -0.2126 1 48.68 0)"><path class="lg-de" fill="#F2F2F2" d="M571.8710042834282 301.611328125Q563.3223302960396 301.611328125 558.1221926510334 298.3656585216522Q552.9220550060272 295.11998891830444 550.2374588251114 289.273893982172Q547.5528626441956 283.4277990460396 546.6270619928837 275.5812093615532Q545.7012613415718 267.7346196770668 545.7012613415718 258.4881788492203V244.31570023298264H559.9169932603836V258.73708695173264Q559.9169932603836 275.1164674758911 562.2677974700928 282.22282871603966Q564.6186016798019 289.3291899561882 572.283897280693 289.3291899561882Q577.6300369501114 289.3291899561882 580.0340767502785 286.763304322958Q582.4381165504456 284.1974186897278 583.0826478004456 278.61821472644806Q583.7271790504456 273.03901076316833 583.7271790504456 263.98539036512375Q583.7271790504456 253.83117109537125 580.6713991165161 247.0369751751423Q577.6156191825867 240.24277925491333 571.0437135696411 233.92263382673264L562.1741999983788 225.34084618091583Q558.2178111672401 221.4837196469307 554.2067607045174 216.69936642050743Q550.1957102417946 211.91501319408417 547.4960226118565 205.69341704249382Q544.7963349819183 199.47182089090347 544.7963349819183 191.42381519079208Q544.7963349819183 180.92427760362625 546.8543827831745 173.0553875863552Q548.9124305844307 165.18649756908417 554.6046015918255 160.79059794545174Q560.2967725992203 156.3946983218193 571.1459066271782 156.3946983218193Q579.8024778366089 156.3946983218193 584.8371652066708 159.53750118613243Q589.8718525767326 162.68030405044556 592.2744663357735 168.39691445231438Q594.6770800948143 174.1135248541832 595.3611815273762 181.83063000440598Q596.045282959938 189.54773515462875 596.045282959938 198.73230546712875V206.93138301372528H582.4309076666832V197.71227300167084Q582.4309076666832 187.11355179548264 581.530298769474 180.77760189771652Q580.6296898722649 174.4416519999504 578.2472373843193 171.6131928563118Q575.8647848963737 168.7847337126732 571.2178381085396 168.7847337126732Q566.901791870594 168.7847337126732 564.1841213703156 170.70466205477715Q561.4664508700371 172.6245903968811 560.2486068308353 177.1111173927784Q559.0307627916336 181.5976443886757 559.0307627916336 189.40965503454208Q559.0307627916336 195.5528238415718 560.472323179245 199.43438977003098Q561.9138835668564 203.31595569849014 564.8552704155445 206.56594276428223Q567.7966572642326 209.8159298300743 572.1127035021782 214.26577806472778L580.9534602165222 223.38277369737625Q588.7870975136757 231.32288217544556 593.5175021290779 241.06638684868813Q598.2479067444801 250.8098915219307 598.2479067444801 264.29323822259903Q598.2479067444801 275.6243446469307 596.149575740099 284.0118858218193Q594.0512447357178 292.3994269967079 588.3856915235519 297.00537756085396Q582.7201383113861 301.611328125 571.8710042834282 301.611328125ZM618.6683416962624 300.0V170.0464653968811H603.3981162905693V158.203125H647.186076104641V170.0464653968811H633.1790084242821V300.0ZM684.9074885475225 301.6559287905693Q674.6488233804703 301.6559287905693 668.8091849684715 297.5067588686943Q662.9695465564728 293.3575889468193 660.5626153349876 284.90832278454627Q658.1556841135025 276.45905662227324 658.1556841135025 263.583984375V158.203125H672.7469172477722V263.18115234375Q672.7469172477722 271.5183100104332 673.3468478322029 277.4104316532612Q673.9467784166336 283.3025532960892 676.5226040782056 286.38277262449265Q679.0984297397778 289.4629919528961 684.9369679060079 289.4629919528961Q690.8613669276237 289.4629919528961 693.3416556715965 286.38277262449265Q695.8219444155693 283.3025532960892 696.3456260561943 277.4507148563862Q696.8693076968193 271.5988764166832 696.8693076968193 263.26171875V158.203125H711.4159401655197V263.583984375Q711.4159401655197 276.45905662227324 709.0895753502846 284.90832278454627Q706.7632105350494 293.3575889468193 701.0041385293007 297.5067588686943Q695.2450665235519 301.6559287905693 684.9074885475225 301.6559287905693ZM732.9181994199753 300.0V158.203125H757.4277354478836Q768.7257282137871 158.203125 774.7854785323143 162.97955632209778Q780.8452288508415 167.75598764419556 783.162958741188 176.59238755702972Q785.4806886315346 185.4287874698639 785.4806886315346 197.57704496383667L785.5252892971039 259.1715279221535Q785.5252892971039 273.69217693805695 782.7371133565903 282.68396615982056Q779.9489374160767 291.67575538158417 773.6697882115841 295.8378776907921Q767.3906390070915 300.0 756.8997363448143 300.0ZM747.428866147995 287.9480740427971H756.5803228020668Q761.415733218193 287.9480740427971 764.5945018231869 285.77638551592827Q767.7732704281807 283.60469698905945 769.3536632955074 277.5773473083973Q770.9340561628342 271.54999762773514 770.9340561628342 260.0592631101608V196.77858978509903Q770.9340561628342 182.3615598678589 767.576171875 176.16947293281555Q764.2182875871658 169.97738599777222 756.904014468193 169.97738599777222H747.428866147995ZM806.4002871513367 300.0V158.203125H820.9915202856064V300.0ZM843.8864611387253 300.0V158.203125H884.0704806447029V170.0464653968811H858.477694272995V221.64049565792084H882.6289202570915V233.6636647582054H858.477694272995V288.0847281217575H884.140986084938V300.0Z"/><path class="lg-en" fill="#F2F2F2" d="M599.00266930151 301.611328125Q590.4539953141214 301.611328125 585.2538576691152 298.3656585216522Q580.053720024109 295.11998891830444 577.3691238431932 289.273893982172Q574.6845276622773 283.4277990460396 573.7587270109655 275.5812093615532Q572.8329263596536 267.7346196770668 572.8329263596536 258.4881788492203V244.31570023298264H587.0486582784654V258.73708695173264Q587.0486582784654 275.1164674758911 589.3994624881745 282.22282871603966Q591.7502666978837 289.3291899561882 599.4155622987748 289.3291899561882Q604.7617019681932 289.3291899561882 607.1657417683602 286.763304322958Q609.5697815685273 284.1974186897278 610.2143128185273 278.61821472644806Q610.8588440685273 273.03901076316833 610.8588440685273 263.98539036512375Q610.8588440685273 253.83117109537125 607.8030641345979 247.0369751751423Q604.7472842006684 240.24277925491333 598.1753785877229 233.92263382673264L589.3058650164605 225.34084618091583Q585.3494761853219 221.4837196469307 581.3384257225991 216.69936642050743Q577.3273752598764 211.91501319408417 574.6276876299382 205.69341704249382Q571.9280000000001 199.47182089090347 571.9280000000001 191.42381519079208Q571.9280000000001 180.92427760362625 573.9860478012563 173.0553875863552Q576.0440956025125 165.18649756908417 581.7362666099073 160.79059794545174Q587.428437617302 156.3946983218193 598.27757164526 156.3946983218193Q606.9341428546907 156.3946983218193 611.9688302247525 159.53750118613243Q617.0035175948144 162.68030405044556 619.4061313538552 168.39691445231438Q621.8087451128961 174.1135248541832 622.492846545458 181.83063000440598Q623.1769479780198 189.54773515462875 623.1769479780198 198.73230546712875V206.93138301372528H609.562572684765V197.71227300167084Q609.562572684765 187.11355179548264 608.6619637875558 180.77760189771652Q607.7613548903466 174.4416519999504 605.3789024024011 171.6131928563118Q602.9964499144555 168.7847337126732 598.3495031266214 168.7847337126732Q594.0334568886758 168.7847337126732 591.3157863883973 170.70466205477715Q588.5981158881189 172.6245903968811 587.3802718489171 177.1111173927784Q586.1624278097154 181.5976443886757 586.1624278097154 189.40965503454208Q586.1624278097154 195.5528238415718 587.6039881973268 199.43438977003098Q589.0455485849382 203.31595569849014 591.9869354336263 206.56594276428223Q594.9283222823144 209.8159298300743 599.24436852026 214.26577806472778L608.085125234604 223.38277369737625Q615.9187625317575 231.32288217544556 620.6491671471597 241.06638684868813Q625.3795717625619 250.8098915219307 625.3795717625619 264.29323822259903Q625.3795717625619 275.6243446469307 623.2812407581807 284.0118858218193Q621.1829097537995 292.3994269967079 615.5173565416337 297.00537756085396Q609.8518033294679 301.611328125 599.00266930151 301.611328125ZM645.8000067143441 300.0V170.0464653968811H630.5297813086511V158.203125H674.3177411227227V170.0464653968811H660.3106734423638V300.0ZM712.0391535656042 301.6559287905693Q701.780488398552 301.6559287905693 695.9408499865533 297.5067588686943Q690.1012115745546 293.3575889468193 687.6942803530694 284.90832278454627Q685.2873491315843 276.45905662227324 685.2873491315843 263.583984375V158.203125H699.878582265854V263.18115234375Q699.878582265854 271.5183100104332 700.4785128502847 277.4104316532612Q701.0784434347154 283.3025532960892 703.6542690962874 286.38277262449265Q706.2300947578595 289.4629919528961 712.0686329240897 289.4629919528961Q717.9930319457055 289.4629919528961 720.4733206896783 286.38277262449265Q722.9536094336511 283.3025532960892 723.4772910742761 277.4507148563862Q724.0009727149011 271.5988764166832 724.0009727149011 263.26171875V158.203125H738.5476051836015V263.583984375Q738.5476051836015 276.45905662227324 736.2212403683664 284.90832278454627Q733.8948755531312 293.3575889468193 728.1358035473825 297.5067588686943Q722.3767315416337 301.6559287905693 712.0391535656042 301.6559287905693ZM760.049864438057 300.0V158.203125H784.5594004659654Q795.8573932318689 158.203125 801.9171435503961 162.97955632209778Q807.9768938689233 167.75598764419556 810.2946237592698 176.59238755702972Q812.6123536496164 185.4287874698639 812.6123536496164 197.57704496383667L812.6569543151857 259.1715279221535Q812.6569543151857 273.69217693805695 809.868778374672 282.68396615982056Q807.0806024341584 291.67575538158417 800.8014532296659 295.8378776907921Q794.5223040251733 300.0 784.0314013628961 300.0ZM774.5605311660768 287.9480740427971H783.7119878201486Q788.5473982362748 287.9480740427971 791.7261668412687 285.77638551592827Q794.9049354462625 283.60469698905945 796.4853283135892 277.5773473083973Q798.065721180916 271.54999762773514 798.065721180916 260.0592631101608V196.77858978509903Q798.065721180916 182.3615598678589 794.7078368930818 176.16947293281555Q791.3499526052476 169.97738599777222 784.0356794862748 169.97738599777222H774.5605311660768ZM847.3965829281808 300.0V239.27455633878708L822.3116737275125 158.203125H836.8496712713243L854.61595055151 218.07394713163376H854.9022504358293L870.2055108218194 158.203125H884.9765726594926L861.9878160624505 239.23859059810638V300.0Z"/></g><polygon class="lg-de" points="600,28 508.1,184.1 425,345 516.9,188.9" fill="url(#fsg)"/><polygon class="lg-en" transform="translate(27.13 0)" points="600,28 508.1,184.1 425,345 516.9,188.9" fill="url(#fsg)"/></svg></a>
+<button class="mode" id="mode" type="button">Ganzer Bericht</button>
+<button class="devbtn" id="devbtn" type="button" aria-pressed="false">Kommentar an</button>
+
+<div class="stage" id="stage">
+
+  <!-- ===== Frage ===== -->
+  <section data-i18n-aria="s1_a1" class="scene" id="s1" aria-label="Frage">
+    <p data-i18n="s1_1" class="kicker keep" data-step="1">Fallstudie 01 · Magist</p>
+    <div class="qframe keep" data-step="1"><span data-i18n="s1_2" class="qlabel">Die Frage</span>
+      <h1 data-i18n="s1_3">Soll Eniac mit Magist als Vertriebspartner nach Brasilien?</h1>
+    </div>
+    <p data-i18n="s1_4" class="big" data-step="2">Magist, ein brasilianischer Marktplatz mit eigenem Versand, würde unseren Vertrieb übernehmen. Der Vertrag liefe <span class="hl">drei Jahre</span>.</p>
+    <p data-i18n="s1_5" class="big" data-step="3">Meine erste Annahme: <span class="hl">Wachsender Markt plus Partner mit Versandnetz, das klingt nach Ja.</span></p>
+    <p data-i18n="s1_6" class="big" data-step="4">Geprüft habe ich drei Punkte: <span style="color:var(--sun-1)">Lieferung</span>, <span style="color:var(--sun-2)">Sortiment</span> und <span style="color:var(--sun-3)">Markt</span>. Für die ersten beiden habe ich den Datensatz von Magist mit SQL ausgewertet: 99.441 Bestellungen von September 2016 bis Oktober 2018. Für den Markt habe ich recherchiert.</p>
+    <aside data-i18n="s1_7" class="dev"><b>Kommentar</b>Das ist mein zweiter Blick auf diese Daten. Beim ersten Mal, im Gruppenprojekt, haben wir mit Nein geantwortet. Diesmal habe ich alles selbst neu gerechnet und bin zu einer anderen Empfehlung gekommen.</aside>
+  </section>
+
+  <!-- ===== 1 Lieferung ===== -->
+  <section data-i18n-aria="s2_a1" class="scene chap intro c1" id="s2" aria-label="Kapitel Lieferung">
+    <div data-i18n="s2_1" class="chap-head keep" data-step="1"><span class="chap-no"><span class="d-new">1</span></span><span class="chap-t">Lieferung</span></div>
+    <ul class="qa">
+      <li data-i18n="s2_2" class="keep" data-step="2"><span class="q">Wie schnell kommt die Ware an?</span></li>
+      <li data-i18n="s2_3" class="keep" data-step="3"><span class="q">Was kostet eine Verspätung?</span></li>
+    </ul>
+  </section>
+
+  <section data-i18n-aria="s3_a1" class="scene" id="s3" aria-label="Lieferzeit">
+    <p data-i18n="s3_1" class="kicker keep" data-step="1">1 · Lieferung</p>
+    <h2 data-i18n="s3_2" class="keep" data-step="1">In 12 Tagen beim Kunden</h2>
+    <p data-i18n="s3_3" data-step="2">Das ist unser Ziel. In Brasilien schaffen es drei Bundesstaaten im Durchschnitt. Ich wollte aber wissen, wie viele Kunden dort wirklich rechtzeitig beliefert werden:</p>
+    <div class="fig keep" data-step="3">
+      <p data-i18n="s3_4" class="fig-h">Anteil der Bestellungen, die in höchstens 12 Tagen ankommen</p>
+      <div class="chart-wrap">
+        <svg data-i18n-aria="s3_a2" class="chart" viewBox="0 0 640 200" role="img" aria-label="São Paulo 80 Prozent, Minas Gerais 61 Prozent, Paraná 60 Prozent, Rio de Janeiro 50 Prozent; ganz Brasilien 59 Prozent">
+          <!-- Skala: 0–100 % auf 170–600 px, 4,3 px pro Prozentpunkt -->
+          <line class="grid" x1="170" y1="24" x2="170" y2="168"/><line class="grid" x1="385" y1="24" x2="385" y2="168"/><line class="grid" x1="600" y1="24" x2="600" y2="168"/>
+          <text data-i18n="s3_5" x="170" y="188" text-anchor="middle">0 %</text><text data-i18n="s3_6" x="385" y="188" text-anchor="middle">50 %</text><text data-i18n="s3_7" x="600" y="188" text-anchor="middle">100 %</text>
+          <g data-step="3" class="keep race"><text data-i18n="s3_8" class="lbl" x="160" y="48" text-anchor="end">São Paulo</text><rect class="bar b-base win" x="170" y="32" width="342.3" height="24"/><text data-i18n="s3_9" class="v" x="504" y="49" text-anchor="end" style="fill:var(--bg)">80 %</text></g>
+          <g data-step="3" class="keep race"><text data-i18n="s3_10" class="lbl" x="160" y="84" text-anchor="end">Minas Gerais</text><rect class="bar b-base" x="170" y="68" width="261.4" height="24"/><text data-i18n="s3_11" class="v" x="439" y="85">61 %</text></g>
+          <g data-step="3" class="keep race"><text data-i18n="s3_12" class="lbl" x="160" y="120" text-anchor="end">Paraná</text><rect class="bar b-base" x="170" y="104" width="258.9" height="24"/><text data-i18n="s3_13" class="v" x="437" y="121">60 %</text></g>
+          <g data-step="3" class="keep race"><text data-i18n="s3_14" class="lbl" x="160" y="156" text-anchor="end">Rio de Janeiro</text><rect class="bar b-base" x="170" y="140" width="213.3" height="24"/><text data-i18n="s3_15" class="v" x="391" y="157">50 %</text></g>
+          <g data-step="4" class="keep"><line class="ref" x1="425" y1="20" x2="425" y2="168" stroke="var(--c4)" stroke-width="2"/><text data-i18n="s3_16" x="425" y="14" text-anchor="middle" style="fill:var(--t-ref)">ganz Brasilien: 59 %</text></g>
+        </svg>
+      </div>
+    </div>
+    <p data-i18n="s3_17" class="big" data-step="3"><span class="key">Nur der Bundesstaat São Paulo liefert verlässlich schnell:</span> 80 % der Bestellungen kommen dort in 12 Tagen an.</p>
+    <aside data-i18n="s3_18" class="dev"><b>Kommentar</b>Im Gruppenprojekt haben wir mit Durchschnitten gearbeitet: drei Bundesstaaten unter 12 Tagen. Der Durchschnitt verdeckt aber, wie viele Kunden länger warten. Deshalb zähle ich hier den Anteil. Außerdem messe ich ab dem Kauf, nicht ab der Zahlungsfreigabe, weil die Kundin ab dem Klick wartet.</aside>
+  </section>
+
+  <section data-i18n-aria="s4_a1" class="scene" id="s4" aria-label="Verspätung">
+    <p data-i18n="s4_1" class="kicker keep" data-step="1">1 · Lieferung</p>
+    <h2 data-i18n="s4_2" class="keep" data-step="1">Was kostet eine Verspätung?</h2>
+    <div class="fig keep" data-step="2">
+      <p data-i18n="s4_3" class="fig-h">Durchschnittliche Bewertung, 1 bis 5 Sterne, ganz Brasilien</p>
+      <div class="chart-wrap">
+        <svg data-i18n-aria="s4_a2" class="chart" viewBox="0 0 640 130" role="img" aria-label="Pünktlich 4,28 Sterne, verspätet 2,29 Sterne">
+          <!-- Skala: 0–5 Sterne auf 170–600 px, 86 px pro Stern -->
+          <line class="grid" x1="170" y1="18" x2="170" y2="96"/><line class="grid" x1="342" y1="18" x2="342" y2="96"/><line class="grid" x1="514" y1="18" x2="514" y2="96"/><line class="grid" x1="600" y1="18" x2="600" y2="96"/>
+          <text data-i18n="s4_4" x="170" y="118" text-anchor="middle">0</text><text data-i18n="s4_5" x="342" y="118" text-anchor="middle">2</text><text data-i18n="s4_6" x="514" y="118" text-anchor="middle">4</text><text data-i18n="s4_7" x="600" y="118" text-anchor="middle">5</text>
+          <g data-step="2" class="keep"><text data-i18n="s4_8" class="lbl" x="160" y="42" text-anchor="end">▲ pünktlich</text><rect class="bar b-pos" x="170" y="26" width="368.1" height="24"/><text data-i18n="s4_9" class="v" x="546" y="43">4,28</text></g>
+          <g data-step="3" class="keep"><text data-i18n="s4_10" class="lbl" x="160" y="80" text-anchor="end">▼ verspätet</text><rect class="bar b-neg" x="170" y="64" width="196.9" height="24"/><text data-i18n="s4_11" class="v" x="375" y="81">2,29</text></g>
+        </svg>
+      </div>
+    </div>
+    <div class="fig keep" data-step="4">
+      <p data-i18n="s4_12" class="fig-h">Wie viele geben nur <span class="stars">★☆☆☆☆</span> oder <span class="stars">★★☆☆☆</span>?</p>
+      <div class="chart-wrap">
+        <svg data-i18n-aria="s4_a3" class="chart" viewBox="0 0 640 130" role="img" aria-label="Nur 1 oder 2 Sterne: pünktlich 9 Prozent, verspätet 62 Prozent">
+          <!-- Skala: 0–100 % auf 170–600 px, 4,3 px pro Prozentpunkt -->
+          <line class="grid" x1="170" y1="18" x2="170" y2="96"/><line class="grid" x1="385" y1="18" x2="385" y2="96"/><line class="grid" x1="600" y1="18" x2="600" y2="96"/>
+          <text data-i18n="s4_13" x="170" y="118" text-anchor="middle">0 %</text><text data-i18n="s4_14" x="385" y="118" text-anchor="middle">50 %</text><text data-i18n="s4_15" x="600" y="118" text-anchor="middle">100 %</text>
+          <g data-step="4" class="keep"><text data-i18n="s4_16" class="lbl" x="160" y="42" text-anchor="end">▲ pünktlich</text><rect class="bar b-pos" x="170" y="26" width="38.7" height="24"/><text data-i18n="s4_17" class="v" x="217" y="43">9 %</text></g>
+          <g data-step="5" class="keep"><text data-i18n="s4_18" class="lbl" x="160" y="80" text-anchor="end">▼ verspätet</text><rect class="bar b-neg" x="170" y="64" width="266.6" height="24"/><text data-i18n="s4_19" class="v" x="445" y="81">62 %</text></g>
+        </svg>
+      </div>
+    </div>
+    <p data-i18n="s4_20" class="big" data-step="6"><span class="key">Für uns ist Verspätung das größte Risiko.</span> Magist verliert eine Bewertung unter vielen. Wir verlieren unseren Ruf in einem neuen Markt.</p>
+  </section>
+
+  <section data-i18n-aria="s5_a1" class="scene chap recap c1" id="s5" aria-label="Lieferung, Antworten">
+    <div data-i18n="s5_1" class="chap-head keep" data-step="1"><span class="chap-no"><span class="d-new">1</span></span><span class="chap-t">Lieferung</span></div>
+    <ul class="qa">
+      <li class="keep" data-step="1"><span data-i18n="s5_2" class="q">Wie schnell kommt die Ware an?</span><span data-i18n="s5_3" class="a keep" data-step="2">Nur im Bundesstaat São Paulo verlässlich: 80 % in 12 Tagen.</span></li>
+      <li class="keep" data-step="1"><span data-i18n="s5_4" class="q">Was kostet eine Verspätung?</span><span data-i18n="s5_5" class="a keep" data-step="3">Unseren Ruf: Verspätete Bestellungen bekommen im Schnitt nur 2,3 Sterne.</span></li>
+    </ul>
+  </section>
+
+  <!-- ===== 2 Sortiment ===== -->
+  <section data-i18n-aria="s6_a1" class="scene chap intro c2" id="s6" aria-label="Kapitel Sortiment">
+    <div data-i18n="s6_1" class="chap-head keep" data-step="1"><span class="chap-no"><span class="d-old">1</span><span class="d-new">2</span></span><span class="chap-t">Sortiment</span></div>
+    <ul class="qa">
+      <li data-i18n="s6_2" class="keep" data-step="2"><span class="q">Wie teuer ist Tech auf Magist?</span></li>
+      <li data-i18n="s6_3" class="keep" data-step="3"><span class="q">Wie wird bezahlt?</span></li>
+    </ul>
+  </section>
+
+  <section data-i18n-aria="s7_a1" class="scene" id="s7" aria-label="Preise">
+    <p data-i18n="s7_1" class="kicker keep" data-step="1">2 · Sortiment</p>
+    <h2 data-i18n="s7_2" class="keep" data-step="1">Wie teuer ist Tech auf Magist?</h2>
+    <p data-i18n="s7_3" data-step="2">Ein Eniac-Artikel kostet im Schnitt 540 € (Vorgabe von Eniac). Wie viele Tech-Artikel auf Magist kosten so viel?</p>
+    <div class="fig keep" data-step="3">
+      <p data-i18n="s7_4" class="fig-h">Verkaufte Tech-Artikel nach Preis, 25 Monate</p>
+      <div class="chart-wrap">
+        <svg data-i18n-aria="s7_a2" class="chart" viewBox="0 0 640 236" role="img" aria-label="Ab 540 Euro 23 Artikel, 263 bis 539 Euro 149, 132 bis 262 Euro 302, 26 bis 131 Euro 3.967, unter 26 Euro 11.271">
+          <!-- Skala: 0–12.000 Artikel auf 170–600 px, 0,03583 px pro Artikel; Preise mit 1 € ≈ 3,8 BRL -->
+          <line class="grid" x1="170" y1="20" x2="170" y2="202"/><line class="grid" x1="313.3" y1="20" x2="313.3" y2="202"/><line class="grid" x1="456.7" y1="20" x2="456.7" y2="202"/><line class="grid" x1="600" y1="20" x2="600" y2="202"/>
+          <text data-i18n="s7_5" x="170" y="222" text-anchor="middle">0</text><text data-i18n="s7_6" x="313.3" y="222" text-anchor="middle">4.000</text><text data-i18n="s7_7" x="456.7" y="222" text-anchor="middle">8.000</text><text data-i18n="s7_8" x="600" y="222" text-anchor="middle">12.000</text>
+          <g data-step="4" class="keep"><text data-i18n="s7_9" class="lbl" x="160" y="44" text-anchor="end" style="fill:var(--t-key)">ab 540 € (Eniac)</text><rect class="bar b-key" x="170" y="28" width="2" height="24"/><text data-i18n="s7_10" class="v" x="180" y="45" style="fill:var(--t-key)">23</text></g>
+          <g data-step="3" class="keep"><text data-i18n="s7_11" class="lbl" x="160" y="80" text-anchor="end">263–539 €</text><rect class="bar b-cmp" x="170" y="64" width="5.3" height="24"/><text data-i18n="s7_12" class="v" x="183" y="81">149</text></g>
+          <g data-step="3" class="keep"><text data-i18n="s7_13" class="lbl" x="160" y="116" text-anchor="end">132–262 €</text><rect class="bar b-cmp" x="170" y="100" width="10.8" height="24"/><text data-i18n="s7_14" class="v" x="189" y="117">302</text></g>
+          <g data-step="3" class="keep"><text data-i18n="s7_15" class="lbl" x="160" y="152" text-anchor="end">26–131 €</text><rect class="bar b-cmp" x="170" y="136" width="142.2" height="24"/><text data-i18n="s7_16" class="v" x="320" y="153">3.967</text></g>
+          <g data-step="3" class="keep"><text data-i18n="s7_17" class="lbl" x="160" y="188" text-anchor="end">unter 26 €</text><rect class="bar b-cmp" x="170" y="172" width="403.9" height="24"/><text data-i18n="s7_18" class="v" x="566" y="189" text-anchor="end" style="fill:var(--bg)">11.271</text></g>
+        </svg>
+      </div>
+    </div>
+    <p data-i18n="s7_19" class="big" data-step="5"><span class="key">23 von 15.712.</span> Unser Preisniveau gibt es auf Magist praktisch nicht. Wir stünden dort allein.</p>
+    <aside data-i18n="s7_20" class="dev"><b>Kommentar</b>Magist rechnet in Real. Ich habe mit 1 € ≈ 3,8 BRL umgerechnet, dem Durchschnitt von April 2017 bis März 2018, dem Zeitraum, aus dem Eniacs eigene Zahlen stammen. Als Tech zähle ich sechs Kategorien, von Computerzubehör bis Tablets.</aside>
+  </section>
+
+  <section data-i18n-aria="s8_a1" class="scene" id="s8" aria-label="Ratenkauf">
+    <p data-i18n="s8_1" class="kicker keep" data-step="1">2 · Sortiment</p>
+    <h2 data-i18n="s8_2" class="keep" data-step="1">Wer teuer kauft, zahlt in Raten</h2>
+    <p data-i18n="s8_3" data-step="2">Wenn wir dort verkaufen, dann teuer. Also habe ich geschaut, wie Magist-Kunden teure Bestellungen bezahlen:</p>
+    <div class="fig keep" data-step="3">
+      <p data-i18n="s8_4" class="fig-h">Anteil, der in 6 oder mehr Raten zahlt, nach Bestellwert</p>
+      <div class="chart-wrap">
+        <svg data-i18n-aria="s8_a2" class="chart" viewBox="0 0 640 200" role="img" aria-label="Ab 263 Euro 76 Prozent, 132 bis 262 Euro 67 Prozent, 26 bis 131 Euro 31 Prozent, unter 26 Euro 10 Prozent">
+          <!-- Skala: 0–100 % auf 170–600 px, 4,3 px pro Prozentpunkt -->
+          <line class="grid" x1="170" y1="20" x2="170" y2="166"/><line class="grid" x1="385" y1="20" x2="385" y2="166"/><line class="grid" x1="600" y1="20" x2="600" y2="166"/>
+          <text data-i18n="s8_5" x="170" y="186" text-anchor="middle">0 %</text><text data-i18n="s8_6" x="385" y="186" text-anchor="middle">50 %</text><text data-i18n="s8_7" x="600" y="186" text-anchor="middle">100 %</text>
+          <g data-step="4" class="keep"><text data-i18n="s8_8" class="lbl" x="160" y="44" text-anchor="end" style="fill:var(--t-key)">ab 263 €</text><rect class="bar b-key" x="170" y="28" width="325.1" height="24"/><text data-i18n="s8_9" class="v" x="503" y="45">76 %</text></g>
+          <g data-step="3" class="keep"><text data-i18n="s8_10" class="lbl" x="160" y="80" text-anchor="end">132–262 €</text><rect class="bar b-base" x="170" y="64" width="289.4" height="24"/><text data-i18n="s8_11" class="v" x="467" y="81">67 %</text></g>
+          <g data-step="3" class="keep"><text data-i18n="s8_12" class="lbl" x="160" y="116" text-anchor="end">26–131 €</text><rect class="bar b-base" x="170" y="100" width="134.6" height="24"/><text data-i18n="s8_13" class="v" x="312" y="117">31 %</text></g>
+          <g data-step="3" class="keep"><text data-i18n="s8_14" class="lbl" x="160" y="152" text-anchor="end">unter 26 €</text><rect class="bar b-base" x="170" y="136" width="44.7" height="24"/><text data-i18n="s8_15" class="v" x="223" y="153">10 %</text></g>
+        </svg>
+      </div>
+    </div>
+    <p data-i18n="s8_16" class="big" data-step="5"><span class="key">Ab 263 € zahlen drei von vier Kunden in sechs oder mehr Raten.</span> Ohne Ratenkauf verkaufen wir in Brasilien nichts.</p>
+    <p data-i18n="s8_17" class="note" data-step="5">Gezählt sind Kreditkartenzahlungen, nur dort gibt es Raten.</p>
+  </section>
+
+  <section data-i18n-aria="s9_a1" class="scene chap recap c2" id="s9" aria-label="Sortiment, Antworten">
+    <div data-i18n="s9_1" class="chap-head keep" data-step="1"><span class="chap-no"><span class="d-new">2</span></span><span class="chap-t">Sortiment</span></div>
+    <ul class="qa">
+      <li class="keep" data-step="1"><span data-i18n="s9_2" class="q">Wie teuer ist Tech auf Magist?</span><span data-i18n="s9_3" class="a keep" data-step="2">Deutlich günstiger als bei uns: Nur 23 von 15.712 Artikeln erreichen unser Preisniveau.</span></li>
+      <li class="keep" data-step="1"><span data-i18n="s9_4" class="q">Wie wird bezahlt?</span><span data-i18n="s9_5" class="a keep" data-step="3">In Raten: Bei teuren Bestellungen fast immer.</span></li>
+    </ul>
+  </section>
+
+  <!-- ===== 3 Markt ===== -->
+  <section data-i18n-aria="s10_a1" class="scene chap intro c3" id="s10" aria-label="Kapitel Markt">
+    <div data-i18n="s10_1" class="chap-head keep" data-step="1"><span class="chap-no"><span class="d-old">2</span><span class="d-new">3</span></span><span class="chap-t">Markt</span></div>
+    <ul class="qa">
+      <li data-i18n="s10_2" class="keep" data-step="2"><span class="q">Was ist das Risiko?</span></li>
+      <li data-i18n="s10_3" class="keep" data-step="3"><span class="q">Wer kauft dort Apple?</span></li>
+      <li data-i18n="s10_4" class="keep" data-step="4"><span class="q">Wächst er?</span></li>
+    </ul>
+  </section>
+
+  <section data-i18n-aria="s11_a1" class="scene" id="s11" aria-label="Lkw-Streik">
+    <p data-i18n="s11_1" class="kicker keep" data-step="1">3 · Markt</p>
+    <div class="hero-ban keep" data-step="1"><div data-i18n="s11_2" class="num neg-n">11<small>Tage</small></div><p data-i18n="s11_3">Im Mai 2018 streikten Lkw-Fahrer gegen den Dieselpreis. Elf Tage stand die Logistik still, dem Onlinehandel fehlten rund 107 Mio. € Umsatz.</p></div>
+    <div class="fig keep" data-step="2">
+      <p data-i18n="s11_4" class="fig-h">Warum ein Streik so viel lahmlegt: So reist Brasiliens Fracht</p>
+      <div class="chart-wrap">
+        <svg data-i18n-aria="s11_a2" class="chart" viewBox="0 0 640 74" role="img" aria-label="61 Prozent der Fracht per Lkw, 39 Prozent auf anderen Wegen">
+          <!-- Skala: 0–100 % auf 170–600 px -->
+          <g data-step="2" class="keep"><rect class="bar b-neg" x="170" y="10" width="262.7" height="34"/><text data-i18n="s11_5" class="v" x="182" y="32" style="fill:var(--bg)">Lkw 61 %</text>
+          <rect class="bar b-base" x="434.7" y="10" width="165.3" height="34"/><text data-i18n="s11_6" class="v" x="446" y="32">andere 39 %</text>
+          <text data-i18n="s11_7" class="lbl" x="160" y="32" text-anchor="end">Fracht</text></g>
+          <text data-i18n="s11_8" x="170" y="66">Quelle: CNT, 2019</text>
+        </svg>
+      </div>
+    </div>
+    <div class="timeline">
+      <p data-i18n="s11_9" class="fig-h">Kann es wieder passieren?</p>
+      <ol>
+        <li data-i18n="s11_10" class="keep" data-step="3"><b>Juli 2017</b><span>Petrobras koppelt den Dieselpreis an den Weltmarkt. Er folgt seitdem dem Ölpreis und dem Dollar, und beide steigen. An der Raffinerie wird Diesel in weniger als einem Jahr 56 % teurer.</span></li>
+        <li data-i18n="s11_11" class="keep" data-step="4"><b>Mai 2018</b><span>Die Lkw-Fahrer können ihre festen Frachtpreise nicht mehr halten und streiken elf Tage. Die Regierung beendet den Streik mit Zugeständnissen von 13,5 Mrd. Real.</span></li>
+        <li data-i18n="s11_12" class="keep later" data-step="5"><b>Herbst 2018</b><span>Die Kopplung an den Weltmarkt gilt weiter. Steigt der Ölpreis, steigt der Diesel, und der nächste Streik ist möglich.</span></li>
+      </ol>
+    </div>
+    <p data-i18n="s11_13" class="big" data-step="6"><span class="key">Ja, es kann wieder passieren.</span> Deshalb brauchen wir Puffer bei den Lieferzeiten, die wir Kunden versprechen, und eine Regel im Vertrag für Ereignisse, für die niemand etwas kann.</p>
+    <aside data-i18n="s11_14" class="dev"><b>Kommentar</b>Die Entscheidung spielt im Herbst 2018, die Daten enden im Oktober 2018. Deshalb nutze ich nur, was damals bekannt war.</aside>
+  </section>
+
+  <section data-i18n-aria="s12_a1" class="scene" id="s12" aria-label="iPhone">
+    <p data-i18n="s12_1" class="kicker keep" data-step="1">3 · Markt</p>
+    <div class="hero-ban keep" data-step="1"><div data-i18n="s12_2" class="num">1.900<small>€</small></div><p data-i18n="s12_3">So viel kostete das iPhone XS in Brasilien im Oktober 2018: <b>das teuerste iPhone der Welt.</b></p></div>
+    <div class="fig keep" data-step="2">
+      <p data-i18n="s12_4" class="fig-h">iPhone XS (256 GB) im Vergleich von 40 Ländern, in US-Dollar</p>
+      <div class="chart-wrap">
+        <svg data-i18n-aria="s12_a2" class="chart" viewBox="0 0 640 92" role="img" aria-label="Günstigstes Land 1.178 Dollar, Brasilien 2.050 Dollar">
+          <!-- Skala: 0–2.200 $ auf 170–600 px -->
+          <g data-step="2" class="keep"><text data-i18n="s12_5" class="lbl" x="160" y="26" text-anchor="end">günstigstes Land</text><rect class="bar b-base" x="170" y="10" width="230.2" height="24"/><text data-i18n="s12_6" class="v" x="408" y="27">1.178 $</text></g>
+          <g data-step="2" class="keep"><text data-i18n="s12_7" class="lbl" x="160" y="64" text-anchor="end">Brasilien</text><rect class="bar b-key" x="170" y="48" width="400.7" height="24"/><text data-i18n="s12_8" class="v" x="562" y="65" text-anchor="end" style="fill:var(--bg)">2.050 $</text></g>
+          <text data-i18n="s12_9" x="170" y="88">Quelle: Deutsche Bank Research, 2019</text>
+        </svg>
+      </div>
+    </div>
+    <div class="fig keep" data-step="3">
+      <p data-i18n="s12_10" class="fig-h">Trotzdem kaufen mehr Menschen ein iPhone: Anteil an allen verkauften Smartphones</p>
+      <div class="chart-wrap">
+        <svg data-i18n-aria="s12_a3" class="chart" viewBox="0 0 640 92" role="img" aria-label="2016 3,8 Prozent, erstes Quartal 2018 5,7 Prozent">
+          <!-- Skala: 0–8 % auf 170–600 px, 53,75 px pro Prozentpunkt -->
+          <g data-step="3" class="keep"><text data-i18n="s12_11" class="lbl" x="160" y="26" text-anchor="end">2016</text><rect class="bar b-base" x="170" y="10" width="204.3" height="24"/><text data-i18n="s12_12" class="v" x="382" y="27">3,8 %</text></g>
+          <g data-step="3" class="keep"><text data-i18n="s12_13" class="lbl" x="160" y="64" text-anchor="end">▲ Anfang 2018</text><rect class="bar b-pos" x="170" y="48" width="306.4" height="24"/><text data-i18n="s12_14" class="v" x="484" y="65">5,7 %</text></g>
+          <text data-i18n="s12_15" x="170" y="88">Quelle: Counterpoint, 2018</text>
+        </svg>
+      </div>
+    </div>
+    <p data-i18n="s12_16" class="big" data-step="4"><span class="key">Gekauft wird trotzdem:</span> in Raten, wie die Magist-Daten zeigen, und als Statussymbol. Wo Arm und Reich weit auseinanderliegen, zählen Statussymbole mehr.</p>
+    <aside data-i18n="s12_17" class="dev"><b>Kommentar</b>Der Zusammenhang zwischen Ungleichheit und Statuskonsum stammt aus der Forschung (Walasek &amp; Brown, 2015). Hier konnte ich als Psychologe etwas beitragen, das in den Daten allein nicht steht.</aside>
+  </section>
+
+  <section data-i18n-aria="s13_a1" class="scene" id="s13" aria-label="Onlinehandel">
+    <p data-i18n="s13_1" class="kicker keep" data-step="1">3 · Markt</p>
+    <div class="hero-ban keep" data-step="1"><div data-i18n="s13_2" class="num pos-n">+12<small>%</small></div><p data-i18n="s13_3">So stark wuchs der Onlinehandel 2018. Die Wirtschaft insgesamt wuchs nur um 1,1 %.</p></div>
+    <div class="fig keep" data-step="2">
+      <p data-i18n="s13_4" class="fig-h">Umsatz im Onlinehandel, Milliarden Real, und Wachstum zum Vorjahr</p>
+      <div class="chart-wrap">
+        <svg data-i18n-aria="s13_a2" class="chart" viewBox="0 0 640 222" role="img" aria-label="2014 35,8 Milliarden, 2015 41,3 plus 15 Prozent, 2016 44,4 plus 7 Prozent, 2017 47,7 plus 8 Prozent, 2018 53,2 plus 12 Prozent">
+          <!-- Skala: 0–60 Mrd. auf 190–30 px, 2,667 px pro Mrd. -->
+          <line class="grid" x1="90" y1="190" x2="600" y2="190"/>
+          <g data-step="2" class="keep"><rect class="vbar b-base" x="110" y="94.5" width="70" height="95.5"/><text data-i18n="s13_5" class="v" x="145" y="86" text-anchor="middle">35,8 Mrd.</text><text data-i18n="s13_6" x="145" y="208" text-anchor="middle">2014</text></g>
+          <g data-step="2" class="keep"><rect class="vbar b-base" x="210" y="79.9" width="70" height="110.1"/><text data-i18n="s13_7" class="v" x="245" y="71" text-anchor="middle">41,3 Mrd.</text><text data-i18n="s13_8" class="gr" x="245" y="53" text-anchor="middle">+15 %</text><text data-i18n="s13_9" x="245" y="208" text-anchor="middle">2015</text></g>
+          <g data-step="2" class="keep"><rect class="vbar b-base" x="310" y="71.6" width="70" height="118.4"/><text data-i18n="s13_10" class="v" x="345" y="63" text-anchor="middle">44,4 Mrd.</text><text data-i18n="s13_11" class="gr" x="345" y="45" text-anchor="middle">+7 %</text><text data-i18n="s13_12" x="345" y="208" text-anchor="middle">2016</text></g>
+          <g data-step="2" class="keep"><rect class="vbar b-base" x="410" y="62.8" width="70" height="127.2"/><text data-i18n="s13_13" class="v" x="445" y="54" text-anchor="middle">47,7 Mrd.</text><text data-i18n="s13_14" class="gr" x="445" y="36" text-anchor="middle">+8 %</text><text data-i18n="s13_15" x="445" y="208" text-anchor="middle">2017</text></g>
+          <g data-step="3" class="keep"><rect class="vbar b-pos" x="510" y="48.1" width="70" height="141.9"/><text data-i18n="s13_16" class="v" x="545" y="39" text-anchor="middle">53,2 Mrd.</text><text data-i18n="s13_17" class="gr" x="545" y="21" text-anchor="middle" style="fill:var(--t-pos)">+12 %</text><text data-i18n="s13_18" x="545" y="208" text-anchor="middle">2018</text></g>
+        </svg>
+      </div>
+    </div>
+    <p data-i18n="s13_19" class="big" data-step="4"><span class="key">Nach der Rezession 2015 und 2016 wächst der Onlinehandel wieder zweistellig,</span> auch nach Abzug der Inflation (3,7 %) mehrfach so schnell wie die Wirtschaft.</p>
+    <p data-i18n="s13_20" class="note src" data-step="4">Quellen: Ebit Webshoppers 35, 37 und 38 (2017–2019), Tribuna PR (Feb 2019)</p>
+  </section>
+
+  <section data-i18n-aria="s14_a1" class="scene chap recap c3" id="s14" aria-label="Markt, Antworten">
+    <div data-i18n="s14_1" class="chap-head keep" data-step="1"><span class="chap-no"><span class="d-new">3</span></span><span class="chap-t">Markt</span></div>
+    <ul class="qa">
+      <li class="keep" data-step="1"><span data-i18n="s14_2" class="q">Was ist das Risiko?</span><span data-i18n="s14_3" class="a keep" data-step="2">Die Logistik: 61 % der Fracht fährt per Lkw, ein Streik legt alles lahm.</span></li>
+      <li class="keep" data-step="1"><span data-i18n="s14_4" class="q">Wer kauft dort Apple?</span><span data-i18n="s14_5" class="a keep" data-step="3">Wenige, aber immer mehr, trotz Rekordpreis. In Raten, als Statussymbol.</span></li>
+      <li class="keep" data-step="1"><span data-i18n="s14_6" class="q">Wächst er?</span><span data-i18n="s14_7" class="a keep" data-step="4">Ja, wieder zweistellig.</span></li>
+    </ul>
+  </section>
+
+  <section data-i18n-aria="s15_a1" class="scene" id="s15" aria-label="São Paulo">
+    <p data-i18n="s15_1" class="kicker keep" data-step="1">Der wichtigste Bundesstaat</p>
+    <h2 data-i18n="s15_2" class="keep" data-step="1"><span class="pos">São Paulo</span> allein ist fast der halbe Markt</h2>
+    <div class="spgrid">
+      <div class="mapbox keep" data-step="1"><svg data-i18n-aria="s15_a2" class="map" viewBox="0 0 600 581" role="img" aria-label="Karte von Brasilien, São Paulo hervorgehoben"><path class="st" d="M6,186 16,190 19,192 26,193 29,194 36,196 40,197 44,198 49,199 52,200 61,204 64,206 69,209 72,210 75,212 84,216 87,217 94,220 99,222 104,224 106,226 104,228 102,230 100,232 96,232 94,234 92,236 90,238 87,237 85,239 83,241 81,243 76,244 74,242 70,242 67,241 63,241 59,241 56,242 53,243 50,242 49,238 49,234 49,228 49,224 50,221 48,219 46,221 44,223 42,225 40,227 31,227 26,227 27,224 25,222 23,220 20,219 13,218 14,215 15,212 13,210 11,208 10,205 8,203 6,201 5,198 3,196 2,193 0,191 1,188 4,187 3,184 6,186Z"/><path class="st" d="M556,210 559,211 558,214 557,217 555,219 553,221 551,223 549,225 548,228 546,230 544,232 542,234 540,232 537,231 535,229 533,227 530,226 528,224 525,223 522,222 520,220 517,219 517,215 520,214 522,212 525,213 529,214 531,216 533,218 535,216 538,217 541,216 544,215 546,213 548,211 551,210 555,210Z"/><path class="st" d="M96,48 97,51 99,53 100,56 100,60 107,64 111,67 114,66 117,65 120,63 122,65 121,68 124,67 125,64 128,63 130,61 132,59 136,59 138,56 141,55 143,53 144,50 147,49 149,47 153,47 156,46 158,48 161,49 163,51 162,54 163,57 164,60 166,62 166,66 165,70 166,73 167,76 168,79 169,82 170,85 168,87 166,89 168,91 170,93 172,95 174,97 176,99 179,100 181,102 179,100 179,96 179,92 180,89 182,87 185,86 188,87 190,89 192,91 195,90 197,88 196,85 198,83 199,80 200,77 210,75 218,75 218,79 218,83 220,85 220,89 223,90 224,93 226,95 228,97 230,95 231,98 233,100 235,102 238,103 241,104 244,105 246,107 248,109 250,111 253,110 256,109 255,112 253,114 252,118 248,127 247,130 246,133 237,152 233,162 228,171 227,175 224,177 224,181 226,183 228,185 229,188 227,190 227,194 225,196 226,199 226,203 225,206 224,209 214,209 206,209 196,209 191,209 185,209 179,209 176,208 174,210 171,209 170,206 168,204 165,203 163,201 162,198 151,197 149,199 148,202 145,203 145,207 142,208 142,212 139,211 136,212 133,213 131,215 129,217 127,219 126,216 123,217 121,219 119,221 116,219 113,218 110,219 108,221 106,223 99,223 96,221 87,217 84,216 77,213 72,210 69,209 66,207 61,204 52,200 49,199 44,198 40,197 36,196 29,194 26,193 19,192 16,190 6,186 3,185 4,182 5,179 8,178 10,176 12,174 11,171 12,168 13,165 15,163 15,159 16,156 18,154 21,152 23,150 26,149 28,147 31,146 34,145 37,144 41,144 44,143 46,141 49,140 52,141 54,143 57,142 59,138 60,133 61,129 62,124 63,115 64,112 64,108 65,104 65,100 66,97 66,93 64,91 63,88 62,85 59,84 57,82 57,77 57,70 61,70 64,69 68,69 70,67 69,64 67,62 63,62 60,63 60,56 61,53 64,52 69,53 79,53 84,53 83,50 86,51 89,50 91,48 93,46 96,45Z"/><path class="st" d="M329,19 331,21 330,24 331,27 331,31 332,34 333,37 334,40 335,43 336,46 340,46 341,49 343,52 347,53 348,56 347,59 347,63 345,66 343,68 340,69 339,72 337,75 335,77 332,78 330,80 327,82 326,85 324,87 322,90 322,94 320,96 317,95 313,95 311,93 309,91 310,88 308,86 307,83 305,81 303,79 302,76 301,73 301,69 299,67 297,65 296,62 295,59 293,57 290,58 288,56 286,54 284,52 280,52 277,51 277,47 276,43 279,44 282,46 286,46 289,45 291,43 294,44 298,44 300,46 304,46 306,44 308,42 310,40 311,37 312,34 313,31 315,29 316,26 318,23 320,21 322,19 323,16 324,13 327,15 329,17Z"/><path class="st" d="M501,206 504,208 507,209 509,211 512,210 513,213 515,215 516,218 519,219 519,223 520,227 522,229 523,232 521,234 522,238 519,239 516,238 516,242 518,244 519,247 521,249 524,251 527,250 526,253 525,256 524,259 522,261 520,264 518,266 516,269 514,271 511,272 508,273 506,275 505,278 506,281 505,284 506,287 505,290 504,293 504,297 504,301 505,304 505,308 506,311 507,314 506,317 505,320 504,323 503,326 503,330 502,333 501,336 502,339 503,342 501,344 498,345 497,348 495,350 492,349 487,346 487,342 485,340 483,338 481,336 482,333 483,330 486,329 486,325 489,323 491,321 492,318 490,316 488,314 484,314 481,313 478,311 475,312 472,313 471,309 467,305 464,303 461,304 458,303 455,302 452,301 450,299 448,297 444,296 441,297 439,299 437,297 434,296 435,293 433,291 430,290 427,291 424,292 422,294 420,296 417,297 414,299 412,301 409,302 406,303 404,305 404,301 404,297 403,294 405,292 403,290 400,288 400,284 401,281 400,278 403,277 399,277 400,274 402,271 399,270 400,267 402,265 400,263 398,261 398,257 401,256 398,255 399,252 403,252 400,251 397,250 395,248 397,245 398,242 400,240 401,237 403,235 406,234 408,232 409,229 411,231 412,234 413,237 415,239 418,240 421,239 423,237 426,236 429,237 432,236 433,233 435,231 436,228 437,225 435,223 435,219 438,218 440,216 442,218 446,218 448,220 450,222 452,220 455,219 457,217 460,216 464,216 465,213 468,212 470,209 473,208 475,210 478,211 479,214 480,217 481,220 483,218 486,217 487,213 491,213 492,210 495,209 497,207 499,205Z"/><path class="st" d="M490,121 493,122 496,123 498,125 501,126 503,128 505,130 508,131 510,133 513,134 514,137 516,139 518,141 520,143 523,144 524,147 527,148 530,150 527,151 524,152 522,155 521,158 520,161 518,163 517,166 515,168 512,170 511,173 510,176 510,180 508,182 510,184 511,187 510,190 508,192 506,194 503,195 501,193 500,190 497,189 495,187 492,188 489,189 486,188 482,188 483,185 484,182 483,179 480,178 479,175 478,172 478,168 477,165 477,161 477,157 476,154 473,152 472,149 473,146 474,143 475,140 473,138 472,135 471,132 470,129 471,126 472,123 474,121 478,121 482,121 485,120 488,121Z"/><path class="st" d="M480,389 478,392 476,395 473,394 469,394 466,393 465,390 464,387 464,383 465,380 468,379 471,378 472,375 473,372 475,370 477,368 477,364 475,362 474,359 477,358 475,356 476,353 473,352 475,350 477,348 479,346 482,345 486,345 491,349 495,351 494,354 494,358 494,362 495,365 494,368 493,371 490,372 489,375 488,378 486,380 485,383 484,386 482,388Z"/><path class="st" d="M344,263 343,266 342,269 344,271 349,272 352,274 355,276 356,273 357,270 360,271 362,269 364,271 366,273 366,277 367,274 369,276 372,274 374,276 377,277 380,279 380,275 383,276 386,275 389,274 392,273 395,271 398,270 401,271 399,273 399,277 402,276 400,278 401,281 400,284 401,287 402,290 404,292 404,296 403,299 401,301 399,299 397,297 396,300 395,303 392,302 390,304 392,306 390,308 391,311 392,314 389,316 386,317 384,315 385,312 383,310 380,309 374,309 372,311 371,314 373,317 378,317 382,317 385,318 384,321 383,324 385,326 386,329 387,332 385,334 383,336 381,338 384,339 385,342 384,345 383,348 381,350 379,352 376,353 373,352 369,352 366,351 363,352 359,352 357,354 355,356 353,354 350,355 347,356 343,356 341,358 339,360 338,363 335,364 334,367 331,366 328,365 325,364 322,363 319,362 317,360 314,359 311,358 309,356 306,357 304,355 306,352 303,351 301,349 302,346 300,343 299,340 300,337 301,334 302,331 304,329 306,327 308,325 307,322 309,320 311,318 313,316 316,315 319,314 321,311 322,308 322,304 324,302 327,301 330,300 331,297 332,294 332,290 334,288 334,284 335,281 336,278 338,276 337,273 339,271 339,267 341,265 343,263Z"/><path class="st" d="M389,212 391,210 390,207 392,205 394,203 396,201 397,198 395,196 392,197 389,198 387,196 385,194 384,191 382,189 380,187 378,185 381,184 382,181 382,177 383,174 384,171 383,168 383,164 382,161 380,159 377,158 375,156 372,157 370,155 367,156 365,158 368,154 372,152 374,150 378,147 381,146 382,143 384,141 385,138 387,136 389,134 390,131 391,128 393,126 394,123 395,120 396,117 397,114 399,112 400,109 401,106 399,104 402,103 401,100 402,97 403,94 405,96 408,95 408,99 410,97 412,99 414,101 413,104 415,102 417,100 420,101 422,103 424,105 426,107 425,110 427,112 428,116 431,115 433,117 434,114 436,112 440,113 444,114 447,115 450,116 452,118 455,119 458,118 461,119 464,120 464,124 462,126 459,127 458,130 454,130 452,132 451,136 449,139 447,141 448,144 449,147 448,150 449,153 450,156 449,159 447,161 446,164 446,168 448,171 449,174 448,177 446,179 443,180 439,180 437,178 434,179 431,180 429,183 427,185 424,186 422,188 419,189 416,190 413,191 411,193 410,196 410,200 408,202 407,205 406,208 404,210 405,213 405,217 407,219 406,222 406,226 405,229 403,231 400,230 398,228 397,225 395,223 396,220 394,218 392,216 390,214 388,212Z"/><path class="st near" d="M430,290 433,291 436,292 434,295 436,297 439,298 442,297 446,297 449,298 451,300 454,301 456,303 459,304 463,304 467,305 469,308 471,311 473,313 476,312 480,312 482,314 486,314 489,315 491,317 492,320 490,322 488,324 486,326 487,329 484,330 482,332 482,336 483,339 485,341 487,343 486,346 483,345 480,346 479,349 476,348 474,350 473,353 475,355 477,357 475,359 472,358 474,360 476,362 477,365 476,368 474,370 473,373 471,375 470,378 466,379 464,381 464,385 463,388 461,390 459,392 458,395 457,398 456,401 453,403 451,405 448,406 445,407 442,406 439,407 435,407 432,408 430,410 426,410 423,411 420,412 417,413 414,414 412,416 409,415 406,416 408,418 405,419 402,420 399,419 397,417 398,414 396,412 393,411 394,408 394,404 395,401 397,399 395,397 392,396 389,397 388,394 387,391 386,388 388,386 386,384 385,381 386,378 383,377 380,376 377,377 374,378 372,376 370,378 366,378 363,379 362,382 361,379 358,381 356,379 357,376 353,375 349,375 345,375 342,374 339,373 337,375 334,376 331,377 331,373 332,370 334,368 335,365 337,363 339,361 340,358 342,356 345,355 348,356 351,355 354,356 356,354 358,352 361,351 364,352 367,351 370,352 373,353 376,354 378,352 380,350 383,349 385,347 384,344 385,341 383,339 382,336 384,334 386,332 387,329 386,326 383,325 384,322 385,319 386,316 390,315 392,313 391,310 392,306 390,304 392,302 395,303 396,300 397,297 399,299 401,301 404,300 403,303 406,304 409,302 412,301 414,299 417,298 419,296 421,294 424,292 427,291 430,290Z"/><path class="st" d="M290,345 293,346 296,347 299,346 302,347 301,350 304,351 303,354 305,356 308,357 311,358 314,359 317,360 319,362 322,363 325,364 328,365 331,366 333,368 332,371 331,374 332,377 331,380 328,381 326,383 324,385 322,387 323,390 320,392 319,395 318,398 316,400 315,403 313,405 312,408 309,409 307,411 304,413 301,415 299,417 296,418 294,420 293,423 292,426 289,427 288,430 287,433 286,436 283,435 280,434 277,433 275,435 271,435 268,434 267,431 266,428 266,424 265,421 264,418 265,415 263,413 262,410 258,410 255,409 253,407 251,409 248,410 245,409 242,410 239,409 236,408 232,408 231,405 232,402 231,399 232,396 233,393 232,390 231,387 230,384 229,381 228,378 231,377 229,372 231,369 234,362 237,350 236,347 235,344 234,341 236,343 238,345 241,344 244,343 246,340 248,338 250,336 254,336 257,335 260,336 263,337 266,338 269,339 271,341 275,341 277,339 280,338 282,340 285,341 288,340 290,338 292,335 293,341 290,342 289,345Z"/><path class="st" d="M197,276 198,273 200,271 201,268 202,265 204,263 203,260 202,257 200,255 200,251 202,249 202,245 199,244 196,243 190,242 181,242 180,239 181,236 180,233 179,230 180,227 179,224 180,221 179,218 180,215 180,211 185,209 190,209 196,209 204,209 214,209 223,209 226,208 225,205 226,202 227,199 225,196 227,194 228,191 229,188 231,190 232,193 233,196 235,199 235,203 236,206 237,209 240,211 243,212 244,215 247,216 249,218 256,218 262,219 274,220 279,220 283,221 287,221 294,221 298,222 308,223 312,223 318,223 327,224 331,224 343,225 342,228 340,230 339,233 338,236 337,239 337,243 336,246 335,249 337,251 336,254 337,257 336,260 337,263 336,266 337,269 339,271 337,273 338,276 336,278 335,281 333,283 334,286 333,289 332,292 332,296 331,299 329,301 326,302 323,303 322,306 321,309 320,312 318,314 315,315 313,317 310,318 308,321 308,325 306,327 304,329 302,331 301,334 300,337 299,340 300,343 302,346 298,346 295,347 292,346 289,345 290,342 293,341 293,335 291,337 288,338 287,341 283,341 281,339 277,339 275,341 271,341 269,339 266,338 264,336 261,335 258,334 255,335 252,336 248,336 247,339 245,341 243,343 240,344 237,343 235,341 232,338 228,337 226,335 224,333 224,329 224,325 226,323 225,320 219,321 209,321 205,321 201,321 198,310 195,304 198,303 198,296 196,294 195,291 196,288 195,285 193,283 194,280 196,278Z"/><path class="st" d="M390,89 392,91 395,90 394,93 397,91 398,94 400,92 400,96 401,93 403,95 401,97 402,100 401,103 399,105 401,107 400,110 398,112 397,115 396,118 395,121 394,124 392,126 391,129 389,131 388,134 387,137 385,139 384,142 382,144 380,146 374,150 372,152 369,154 366,157 368,159 371,161 373,163 371,165 370,168 369,171 367,173 366,176 364,178 361,179 359,181 358,184 357,187 355,190 356,193 358,195 358,199 357,202 355,204 354,207 352,209 350,211 348,213 347,216 345,218 344,221 343,224 334,224 327,224 318,223 313,223 308,223 301,222 294,221 287,221 283,221 279,220 274,220 262,219 257,218 250,218 248,216 245,215 243,212 240,211 238,209 236,207 235,204 236,201 234,198 233,195 232,192 230,189 228,187 227,184 225,182 224,179 225,176 228,171 233,162 237,152 245,135 246,132 248,128 252,118 254,115 255,112 257,110 254,111 250,111 249,108 246,107 244,105 241,104 238,103 235,102 233,100 231,98 230,95 228,97 226,95 224,93 223,90 220,89 220,85 218,83 218,79 218,75 218,69 218,60 221,59 224,58 225,55 228,56 231,55 233,53 237,53 239,51 241,49 244,48 246,50 250,50 253,49 256,50 259,51 261,49 260,46 257,45 259,43 261,41 263,43 266,42 269,41 272,40 275,41 277,44 277,48 278,51 281,52 284,53 287,55 289,57 292,58 295,59 297,61 297,65 299,67 301,69 300,72 301,75 303,77 304,80 306,82 307,85 309,87 310,90 311,93 313,95 316,96 320,96 322,94 322,90 324,87 326,85 327,82 329,80 331,78 335,77 337,75 339,72 340,69 343,68 345,70 346,73 349,74 352,75 354,77 360,81 363,82 367,82 369,84 371,87 375,88 378,87 380,89 383,90 382,87 385,88 387,90 390,89Z"/><path class="st" d="M530,168 531,171 528,172 528,176 530,179 533,178 536,179 537,182 540,181 540,177 541,174 543,172 545,174 548,175 552,175 556,175 559,176 562,175 563,178 564,181 565,184 565,188 564,191 562,189 559,188 556,189 555,192 552,193 549,194 545,194 542,195 540,197 538,199 536,201 533,202 531,200 530,197 531,194 532,191 534,189 531,188 528,187 526,189 524,191 521,192 519,194 516,195 514,193 511,194 509,192 510,189 511,186 509,184 508,181 510,179 510,175 512,173 514,175 518,175 521,174 523,172 525,170 528,169Z"/><path class="st" d="M531,187 533,189 531,191 532,194 530,196 531,199 533,201 536,200 539,199 540,196 543,195 546,194 550,194 553,193 555,191 557,189 560,188 563,189 565,191 565,195 564,198 563,201 562,205 561,208 560,211 557,210 553,210 549,210 547,212 545,214 543,216 540,217 537,216 534,218 532,216 529,215 527,213 524,212 522,210 521,213 519,215 517,217 515,215 514,212 512,210 510,212 508,210 505,209 502,208 500,206 497,207 495,209 492,210 491,213 488,214 486,216 484,218 481,220 479,218 480,215 478,213 477,210 474,209 471,208 473,206 475,204 478,203 480,201 482,199 482,195 480,193 480,189 483,188 487,189 490,188 493,187 496,188 499,190 501,192 503,194 506,193 509,192 511,194 514,193 516,195 519,194 521,192 524,191 526,189 528,187Z"/><path class="st" d="M465,120 467,122 471,122 472,125 470,127 471,130 472,133 472,137 474,139 474,143 473,146 472,149 473,152 475,154 477,156 477,160 477,164 478,167 478,171 479,174 480,177 483,179 484,182 483,185 482,188 480,190 481,193 482,197 481,200 479,202 477,204 474,205 472,207 470,209 468,211 466,213 464,215 461,216 458,217 455,218 453,220 450,221 448,219 445,218 441,217 438,218 435,219 435,223 437,225 436,228 435,231 434,234 432,236 429,237 426,236 423,237 421,239 419,241 416,240 413,239 412,236 412,232 410,230 407,231 404,230 406,228 406,224 406,220 405,217 405,213 404,210 406,208 407,205 408,202 410,200 410,196 411,193 413,191 416,190 419,189 422,188 424,186 427,185 429,183 431,181 433,179 436,178 439,179 442,180 445,179 448,178 449,175 449,171 447,169 446,166 446,162 448,159 450,157 449,154 448,151 449,147 448,144 447,141 449,139 451,137 452,134 453,131 456,130 459,129 461,127 463,125 464,122Z"/><path class="st near" d="M316,414 319,415 322,416 326,416 329,417 332,418 335,419 338,420 341,419 344,420 347,419 348,422 351,423 352,426 352,430 352,434 354,436 356,438 357,441 356,444 358,446 361,445 364,446 367,447 366,450 370,451 372,453 375,454 373,456 371,458 369,460 367,462 366,465 362,465 358,466 355,467 353,469 350,468 348,466 344,466 341,467 338,466 336,468 333,469 330,470 327,471 328,474 326,476 324,474 320,474 317,473 314,472 310,472 307,471 303,471 300,470 297,469 293,469 292,466 291,463 290,460 287,459 283,459 280,458 281,455 282,452 282,448 284,445 284,441 283,438 285,436 287,434 288,431 289,428 291,426 293,424 294,421 296,419 298,417 301,416 303,414 306,415 309,414 312,415 315,416 316,413Z"/><path class="st" d="M425,425 422,426 420,424 421,421 423,419 426,418 429,417 427,415 423,415 422,412 425,411 428,410 431,409 434,408 437,407 441,407 444,406 447,407 449,405 452,404 455,403 458,401 457,398 458,395 459,392 461,390 463,388 466,389 465,392 468,393 471,394 474,395 476,397 475,400 476,403 475,406 473,408 470,409 467,410 465,412 463,414 461,416 462,419 459,420 455,420 451,420 447,420 446,417 443,418 445,420 442,421 439,422 437,420 434,419 431,420 429,422 427,420 424,421 422,423 424,425Z"/><path class="st" d="M531,152 535,152 537,154 541,154 546,154 549,153 552,154 555,155 557,157 558,160 559,163 560,166 561,169 562,172 563,175 560,176 557,175 553,175 549,175 546,174 544,172 541,173 542,176 540,178 539,182 537,180 534,179 531,180 529,178 527,176 528,173 530,171 531,168 528,169 525,170 522,171 521,174 518,175 514,175 512,173 513,169 516,168 517,165 518,162 520,160 522,158 523,154 527,151 530,150Z"/><path class="st" d="M109,225 106,226 104,224 106,222 109,221 111,219 114,218 117,220 120,219 123,218 126,216 127,219 129,217 131,215 132,212 135,213 138,212 142,212 142,208 144,206 145,203 148,202 149,199 151,197 160,197 163,199 164,202 167,203 168,206 171,208 173,210 175,208 178,209 180,211 179,214 178,217 179,220 180,223 180,227 179,230 180,233 181,236 180,239 179,242 187,242 195,242 197,244 201,244 202,247 201,250 200,253 202,255 203,258 204,261 203,264 201,266 201,270 199,272 198,275 196,277 194,279 192,281 189,280 186,279 182,279 179,280 175,280 173,278 171,276 169,274 166,273 164,271 161,272 159,270 157,268 154,267 152,265 149,264 146,265 143,264 139,264 137,262 135,260 133,258 130,257 129,254 126,253 127,250 125,248 124,245 126,243 125,240 124,237 123,234 125,232 125,228 126,225 124,223 122,225 119,224 115,224 112,225 109,226Z"/><path class="st" d="M203,32 202,35 202,39 203,42 205,44 206,47 205,50 207,52 209,54 211,56 213,58 216,59 218,69 218,75 213,75 201,75 200,78 198,80 197,83 196,86 197,89 195,91 192,92 190,90 189,87 186,86 183,87 181,89 179,91 180,94 179,97 180,100 177,99 174,98 173,95 170,93 168,91 166,89 169,88 170,85 169,82 168,79 167,76 166,73 165,70 166,67 167,64 165,62 164,58 162,56 163,53 163,49 160,48 157,47 154,46 152,43 148,43 145,42 143,40 144,37 142,34 141,31 140,28 141,25 139,23 137,21 135,19 133,17 137,17 141,17 143,19 145,21 148,20 151,21 153,19 156,20 158,23 162,23 162,19 165,18 167,16 170,17 173,16 176,15 180,15 181,12 184,11 188,11 189,8 192,7 193,4 192,1 196,1 199,0 201,2 202,5 201,8 200,11 203,12 206,13 206,17 208,19 207,22 205,24 204,27 203,30Z"/><path class="st" d="M317,548 315,550 313,552 315,554 316,557 313,559 312,562 311,565 310,568 308,571 306,573 304,575 302,577 300,579 297,581 295,579 297,577 296,574 297,571 300,570 301,567 304,568 307,567 308,564 308,560 307,557 305,559 307,561 304,562 302,564 298,564 296,562 294,560 293,557 291,555 289,553 282,549 280,547 277,546 274,545 271,544 269,542 268,539 266,537 264,539 261,541 259,539 258,536 256,534 254,532 252,530 250,528 248,526 244,526 243,529 239,529 236,528 238,526 240,524 242,522 244,520 246,518 248,516 250,514 252,512 254,510 255,507 258,506 259,503 261,501 264,500 265,497 268,496 270,494 273,493 275,491 277,488 280,487 283,486 286,485 288,483 291,482 294,483 297,482 300,483 302,481 304,483 307,484 311,483 313,485 317,485 319,487 322,488 325,489 327,491 330,492 331,495 333,497 335,499 337,501 340,502 344,502 348,502 350,504 348,506 347,509 346,512 344,514 347,513 350,514 349,517 347,519 345,522 344,525 343,528 342,532 340,534 338,537 336,539 334,543 332,545 329,547 325,550 323,552 320,553 317,555 316,552 319,553 321,551 324,550 325,547 329,546 329,542 331,540 333,538 336,536 336,532 338,530 336,528 334,530 331,531 330,528 328,526 327,529 329,531 327,533 326,536 324,538 325,541 322,542 320,544 317,545 317,549Z"/><path class="st" d="M292,474 293,471 295,469 299,469 301,471 305,471 309,471 312,472 316,472 318,474 322,474 325,475 328,474 327,471 329,469 332,470 335,469 337,467 340,466 344,466 347,465 349,467 351,469 354,468 356,466 359,465 365,465 366,468 367,471 365,473 365,477 366,480 367,483 367,487 366,490 367,493 366,496 365,499 364,502 362,505 359,506 356,508 354,510 352,512 350,515 348,513 345,514 347,512 347,508 348,505 350,503 347,502 344,501 341,502 338,501 336,499 334,497 332,495 330,493 328,491 326,489 323,488 319,488 317,486 315,484 312,485 309,484 306,483 303,482 300,483 297,482 294,483 291,482 293,480 292,477 293,474ZM369,486 368,490 367,493 367,489 369,486Z"/><path class="st" d="M520,220 522,222 525,223 528,224 530,226 533,227 535,229 537,231 540,232 542,234 540,236 537,237 535,239 533,241 532,244 530,246 529,249 526,250 522,250 520,248 519,245 518,242 516,240 518,238 522,238 521,235 522,232 522,228 519,226 518,223 519,220Z"/><path class="st sp" d="M402,433 401,436 398,435 395,437 392,438 390,440 388,442 386,444 383,445 381,447 378,449 376,451 375,454 372,453 371,450 368,451 367,448 365,446 362,445 359,446 356,445 357,442 356,439 354,437 353,434 352,431 351,428 351,424 349,422 347,420 343,420 340,419 337,420 334,419 332,417 328,416 324,416 321,415 318,414 315,415 311,415 308,414 305,415 301,416 303,414 305,412 307,410 310,409 312,407 313,404 315,402 316,399 318,397 319,394 321,391 323,389 323,385 325,383 327,381 330,380 332,377 334,375 337,374 340,373 343,374 346,375 350,375 354,376 357,375 356,378 357,381 359,379 361,382 362,379 365,378 369,378 371,376 373,378 376,377 379,376 382,375 384,377 386,379 385,382 387,384 388,387 386,389 387,392 388,395 390,397 393,396 395,398 396,401 394,403 395,406 394,409 395,412 397,414 398,417 400,419 404,419 407,418 408,415 412,415 415,414 418,413 421,412 423,414 426,415 430,415 429,418 426,419 423,420 421,422 420,425 418,427 416,429 413,430 412,433 409,432 405,432 402,433Z"/><path class="st" d="M389,212 391,214 392,217 395,218 396,221 394,223 397,225 398,228 400,230 403,231 407,231 406,234 403,235 401,237 400,240 398,242 397,245 395,247 396,250 400,250 403,252 400,251 398,253 400,255 398,257 399,260 400,263 402,265 400,267 399,270 402,271 399,272 398,269 396,271 392,272 390,274 387,275 384,276 381,275 380,278 377,277 374,276 372,274 370,276 368,274 367,277 366,274 364,272 363,269 361,271 359,269 357,271 355,273 356,276 352,274 349,272 346,271 343,270 342,267 343,264 341,266 339,268 336,267 337,264 337,260 336,257 336,253 335,250 336,247 337,244 337,240 338,237 339,234 340,231 341,228 343,225 344,222 345,219 346,216 348,214 349,211 352,210 353,207 355,205 357,203 358,200 358,196 357,193 355,191 357,188 358,185 357,182 359,180 362,179 365,178 366,175 368,173 369,170 371,168 371,164 373,162 370,160 367,159 364,158 367,157 370,155 372,157 375,156 377,158 380,159 382,161 383,164 383,168 384,171 383,174 382,177 382,181 381,184 378,185 380,187 382,189 384,191 385,194 387,196 389,198 392,197 395,196 397,198 396,201 394,203 392,205 390,207 391,210 389,212Z"/><path class="st" d="M385,317 380,317 376,317 371,317 371,313 372,310 380,309 383,310 385,312 384,315Z"/></svg></div>
+      <div class="spfacts">
+        <div class="ring keep" data-step="2"><svg viewBox="0 0 100 100"><circle class="trk" cx="50" cy="50" r="42"/><circle class="arc" cx="50" cy="50" r="42" style="--p:.42"/></svg><div><div data-i18n="s15_3" class="num">42<small>%</small></div><div data-i18n="s15_4" class="lbl">aller Bestellungen auf Magist</div></div></div>
+        <div class="ring keep" data-step="2"><svg viewBox="0 0 100 100"><circle class="trk" cx="50" cy="50" r="42"/><circle class="arc" cx="50" cy="50" r="42" style="--p:.35"/></svg><div><div data-i18n="s15_5" class="num">35<small>%</small></div><div data-i18n="s15_6" class="lbl">des Tech-Umsatzes</div></div></div>
+        <div class="ring keep" data-step="2"><svg viewBox="0 0 100 100"><circle class="trk" cx="50" cy="50" r="42"/><circle class="arc" cx="50" cy="50" r="42" style="--p:.80"/></svg><div><div data-i18n="s15_7" class="num">80<small>%</small></div><div data-i18n="s15_8" class="lbl">in 12 Tagen geliefert, im Schnitt nach 8,8 Tagen</div></div></div>
+      </div>
+    </div>
+    <p data-i18n="s15_9" class="big" data-step="5"><span class="key">Hier erreichen wir die meisten Kunden, und hier wird am schnellsten geliefert.</span></p>
+    <aside data-i18n="s15_10" class="dev"><b>Kommentar</b>Die Gruppe hatte am Ende auf zwei Städte eingeengt. Ich bleibe beim Bundesstaat, weil sich ein Vertriebsvertrag an Regionen festmacht, nicht an einzelnen Städten.</aside>
+  </section>
+
+  <!-- ===== Empfehlung ===== -->
+  <section data-i18n-aria="s16_a1" class="scene" id="s16" aria-label="Empfehlung">
+    <p data-i18n="s16_1" class="kicker keep" data-step="1">Empfehlung</p>
+    <h2 data-i18n="s16_2" class="keep" data-step="1">Nicht <span class="pos">Ja</span>, nicht <span class="neg">Nein</span>: <span class="key">ein Test mit Ausstiegsklausel</span></h2>
+    <p data-i18n="s16_3" class="big keep" data-step="2"><span class="key">Zwölf Monate Test, nur im Bundesstaat São Paulo.</span></p>
+    <p data-i18n="s16_4" data-step="3">Magist meldet jedes Quartal diese drei Zahlen:</p>
+    <div class="kpis">
+      <div data-i18n="s16_5" class="kpi keep" data-step="4"><b>Lieferung in höchstens 12 Tagen</b><span>mind. 80 %</span></div>
+      <div data-i18n="s16_6" class="kpi keep" data-step="5"><b>Pünktlich zum zugesagten Termin</b><span>mind. 95 %</span></div>
+      <div data-i18n="s16_7" class="kpi keep" data-step="6"><b>Kundenbewertung</b><span>mind. 4 Sterne im Durchschnitt</span></div>
+    </div>
+    <p data-i18n="s16_8" data-step="7">Dazu eine Bedingung: Magist bietet Ratenkauf bis zwölf Raten an und zahlt uns sofort den vollen Preis aus. Die Raten sind Magists Sache, nicht unsere.</p>
+    <aside data-i18n="s16_9" class="dev"><b>Kommentar</b>Die Daten sprechen gegen drei Jahre, aber nicht gegen den Markt. Eine Entscheidung, die man zurücknehmen kann, begrenzt das Risiko, statt eine Chance zu verschenken. Die drei Zielwerte sind das, was São Paulo heute schon schafft: Magist muss nur halten, was es zeigt.</aside>
+  </section>
+
+  <section data-i18n-aria="s17_a1" class="scene" id="s17" aria-label="Plan B">
+    <p data-i18n="s17_1" class="kicker keep" data-step="1">Empfehlung</p>
+    <h2 data-i18n="s17_2" class="keep" data-step="1">Und wenn es nicht klappt?</h2>
+    <div class="flow">
+      <div data-i18n="s17_3" class="fbox start keep" data-step="2">12 Monate Test in São Paulo</div>
+      <div class="fsplit keep" data-step="3"><i></i><i></i></div>
+      <div class="fcols">
+        <div class="fcol keep" data-step="3">
+          <div data-i18n="s17_4" class="fbox ok"><span class="pos">▲ Ziele erreicht</span></div>
+          <div class="farrow"></div>
+          <div data-i18n="s17_5" class="fbox">Ausbau auf Minas Gerais und Paraná: Dorthin gehen zusammen weitere 17 % aller Magist-Bestellungen.</div>
+        </div>
+        <div class="fcol keep" data-step="4">
+          <div data-i18n="s17_6" class="fbox no"><span class="neg">▼ Ein Ziel zwei Quartale in Folge verfehlt</span></div>
+          <div class="farrow"></div>
+          <div data-i18n="s17_7" class="fbox">Ausstieg mit 30 Tagen Frist</div>
+          <div class="farrow"></div>
+          <div data-i18n="s17_8" class="fbox alt">Wechsel zu <span class="cmp">B2W</span> oder <span class="cmp">Amazon</span>, gemessen an denselben drei Zielen</div>
+        </div>
+      </div>
+    </div>
+    <p data-i18n="s17_9" data-step="5">Mit <span class="cmp">B2W</span> und <span class="cmp">Amazon</span> sprechen wir von Anfang an. Quartale mit höherer Gewalt, also Ereignissen wie einem Streik, für die Magist nichts kann, zählen nicht.</p>
+  </section>
+
+  <!-- ===== Ergebnis ===== -->
+  <section data-i18n-aria="s18_a1" class="scene" id="s18" aria-label="Ergebnis">
+    <p data-i18n="s18_1" class="kicker keep" data-step="1">Fallstudie 01 · Magist</p>
+    <div class="qframe keep" data-step="1"><span data-i18n="s18_2" class="qlabel">Die Frage</span>
+      <h1 data-i18n="s18_3">Soll Eniac mit Magist als Vertriebspartner nach Brasilien?</h1>
+    </div>
+    <div class="qframe aframe keep" data-step="2"><span data-i18n="s18_4" class="qlabel">Die Antwort</span>
+      <p data-i18n="s18_5" class="ans"><span class="pos">Ja</span>, als Test: <span class="key">zwölf Monate, nur São Paulo, mit Ausstieg.</span></p>
+    </div>
+    <div class="endbtns keep" data-step="3">
+      <button type="button" id="toAll" data-i18n="to_all">Ganzer Bericht mit Kommentaren</button>
+      <button type="button" id="toStart" data-i18n="to_start">Nochmal von vorn</button>
+    </div>
+  </section>
+
+</div>
+
+<p class="hint" id="hint" data-i18n="hint">Weiter mit Klick, Leertaste oder →</p>
+<nav class="nav" data-i18n-aria="nav" aria-label="Seiten">
+  <div class="count" id="count" aria-live="polite"><b>1</b> / 18</div>
+  <div class="bar-track" aria-hidden="true"><i id="prog"></i></div>
+  <div class="btns">
+    <button type="button" id="fsbtn" data-i18n-title="fs_title" title="Vollbild an oder aus (Taste F)" data-i18n-aria="fs_label" aria-label="Vollbild">⛶</button>
+    <button type="button" id="auto" aria-pressed="true" data-i18n-title="auto_title" title="Automatisch abspielen an oder aus (Taste P)">❚❚ Auto</button>
+    <button type="button" id="prev" data-i18n-aria="prev" aria-label="Zurück">←</button>
+    <button type="button" id="next" data-i18n-aria="next_label" aria-label="Weiter">Weiter →</button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  // ---------- Sprache (Deutsch / Englisch) ----------
+  // Jedes übersetzte Element trägt einen Schlüssel: data-i18n="what" (Text),
+  // data-i18n-aria="prev" (Beschriftung für Screenreader), data-i18n-title="fs_title" (Tooltip).
+  // Bedienung steht in tr, der Bericht in en.
+  var tr = {
+    what:        { de: "Datenanalytiker", en: "Data Analyst" },
+    portfolio:   { de: "Portfolio", en: "Portfolio" },
+    choice:      { de: "Wie möchtest du den Bericht sehen?", en: "How would you like to view the report?" },
+    pick_auto:   { de: "▶ Abspielen", en: "▶ Play" },
+    pick_manual: { de: "Selbst durchklicken", en: "Click through" },
+    pick_all:    { de: "Ganzer Bericht", en: "Full report" },
+    fs:          { de: "im Vollbild", en: "full screen" },
+    brand:       { de: "Fallstudie, zum Anfang", en: "Case Study, back to start" },
+    logo:        { de: "Fallstudie", en: "Case Study" },
+    doc_title:   { de: "Fallstudie 01 Magist", en: "Case Study 01 Magist" },
+    nav:         { de: "Seiten", en: "Pages" },
+    hint:        { de: "Weiter mit Klick, Leertaste oder →", en: "Continue with click, space or →" },
+    next:        { de: "Weiter →", en: "Next →" },
+    next_page:   { de: "Nächste Seite →", en: "Next page →" },
+    next_label:  { de: "Weiter", en: "Next" },
+    prev:        { de: "Zurück", en: "Back" },
+    fs_title:    { de: "Vollbild an oder aus (Taste F)", en: "Full screen on or off (F key)" },
+    fs_label:    { de: "Vollbild", en: "Full screen" },
+    auto_title:  { de: "Automatisch abspielen an oder aus (Taste P)", en: "Autoplay on or off (P key)" },
+    mode_all:    { de: "Ganzer Bericht", en: "Full report" },
+    mode_steps:  { de: "Schritt für Schritt", en: "Step by step" },
+    dev_on:      { de: "Kommentar an", en: "Comments on" },
+    dev_off:     { de: "Kommentar aus", en: "Comments off" },
+    to_all:      { de: "Ganzer Bericht mit Kommentaren", en: "Full report with comments" },
+    to_start:    { de: "Nochmal von vorn", en: "Start over" }
+  };
+  // ---------- Bericht auf Englisch ----------
+  // Der deutsche Text steht im HTML. Hier steht nur die englische Fassung, gleicher Schlüssel.
+  // s3_2 heißt: Seite 3, zweiter Text. Fehlt ein Schlüssel, bleibt der deutsche Text stehen (z. B. reine Jahreszahlen).
+  var en = {
+    "cover_1": "Case Study 01",
+    "cover_3": "The scenario",
+    "cover_4": "A role-play from my Data Analytics &amp; AI training program. We are the data team at <b>Eniac</b>, an online retailer of Apple products and accessories. Eniac wants to enter Brazil through the marketplace <b>Magist</b>.",
+    "cover_5": "As a team of three, we were to use Magist’s data to prepare a decision and present it to the CEO. This is my own remake: everything recalculated, everything rethought.",
+    "cover_6": "Continues on its own · Click to skip",
+    "s1_1": "Case Study 01 · Magist",
+    "s1_2": "The question",
+    "s1_3": "Should Eniac enter Brazil with Magist as its sales partner?",
+    "s1_4": "Magist, a Brazilian marketplace with its own delivery network, would take over our sales. The contract would run for <span class=\"hl\">three years</span>.",
+    "s1_5": "My first assumption: <span class=\"hl\">A growing market plus a partner with a delivery network sounds like a yes.</span>",
+    "s1_6": "I checked three things: <span style=\"color:var(--sun-1)\">delivery</span>, <span style=\"color:var(--sun-2)\">product range</span> and <span style=\"color:var(--sun-3)\">market</span>. For the first two, I analyzed Magist’s dataset with SQL: 99,441 orders from September 2016 to October 2018. For the market, I did desk research.",
+    "s1_7": "<b>Comment</b>This is my second look at this data. The first time, in the group project, we answered no. This time I recalculated everything myself and arrived at a different recommendation.",
+    "s2_1": "<span class=\"chap-no\"><span class=\"d-new\">1</span></span><span class=\"chap-t\">Delivery</span>",
+    "s2_2": "<span class=\"q\">How fast do goods arrive?</span>",
+    "s2_3": "<span class=\"q\">What does a late delivery cost?</span>",
+    "s3_1": "1 · Delivery",
+    "s3_2": "With the customer in 12 days",
+    "s3_3": "That is our target. In Brazil, three states manage it on average. But I wanted to know how many customers there actually get their order on time:",
+    "s3_4": "Share of orders that arrive within 12 days",
+    "s3_5": "0%",
+    "s3_6": "50%",
+    "s3_7": "100%",
+    "s3_9": "80%",
+    "s3_11": "61%",
+    "s3_13": "60%",
+    "s3_15": "50%",
+    "s3_16": "all of Brazil: 59%",
+    "s3_17": "<span class=\"key\">Only the state of São Paulo delivers reliably fast:</span> 80% of orders arrive there within 12 days.",
+    "s3_18": "<b>Comment</b>In the group project we worked with averages: three states under 12 days. But the average hides how many customers wait longer. That is why I count the share here. I also measure from the purchase, not from payment approval, because the customer starts waiting the moment she clicks.",
+    "s4_1": "1 · Delivery",
+    "s4_2": "What does a late delivery cost?",
+    "s4_3": "Average rating, 1 to 5 stars, all of Brazil",
+    "s4_8": "▲ on time",
+    "s4_9": "4.28",
+    "s4_10": "▼ late",
+    "s4_11": "2.29",
+    "s4_12": "How many give only <span class=\"stars\">★☆☆☆☆</span> or <span class=\"stars\">★★☆☆☆</span>?",
+    "s4_13": "0%",
+    "s4_14": "50%",
+    "s4_15": "100%",
+    "s4_16": "▲ on time",
+    "s4_17": "9%",
+    "s4_18": "▼ late",
+    "s4_19": "62%",
+    "s4_20": "<span class=\"key\">For us, late delivery is the biggest risk.</span> Magist loses one rating among many. We lose our reputation in a new market.",
+    "s5_1": "<span class=\"chap-no\"><span class=\"d-new\">1</span></span><span class=\"chap-t\">Delivery</span>",
+    "s5_2": "How fast do goods arrive?",
+    "s5_3": "Reliably only in the state of São Paulo: 80% within 12 days.",
+    "s5_4": "What does a late delivery cost?",
+    "s5_5": "Our reputation: late orders get only 2.3 stars on average.",
+    "s6_1": "<span class=\"chap-no\"><span class=\"d-old\">1</span><span class=\"d-new\">2</span></span><span class=\"chap-t\">Product range</span>",
+    "s6_2": "<span class=\"q\">How expensive is tech on Magist?</span>",
+    "s6_3": "<span class=\"q\">How do people pay?</span>",
+    "s7_1": "2 · Product range",
+    "s7_2": "How expensive is tech on Magist?",
+    "s7_3": "An Eniac item costs €540 on average (Eniac’s figure). How many tech items on Magist cost that much?",
+    "s7_4": "Tech items sold by price, 25 months",
+    "s7_6": "4,000",
+    "s7_7": "8,000",
+    "s7_8": "12,000",
+    "s7_9": "€540 and up (Eniac)",
+    "s7_11": "€263–539",
+    "s7_13": "€132–262",
+    "s7_15": "€26–131",
+    "s7_16": "3,967",
+    "s7_17": "under €26",
+    "s7_18": "11,271",
+    "s7_19": "<span class=\"key\">23 out of 15,712.</span> Our price level practically doesn’t exist on Magist. We would be on our own there.",
+    "s7_20": "<b>Comment</b>Magist works in Brazilian reais. I converted at €1 ≈ 3.8 BRL, the average from April 2017 to March 2018, the period Eniac’s own figures come from. I count six categories as tech, from computer accessories to tablets.",
+    "s8_1": "2 · Product range",
+    "s8_2": "Expensive purchases are paid in installments",
+    "s8_3": "If we sell there, we sell expensive products. So I looked at how Magist customers pay for expensive orders:",
+    "s8_4": "Share paying in 6 or more installments, by order value",
+    "s8_5": "0%",
+    "s8_6": "50%",
+    "s8_7": "100%",
+    "s8_8": "€263 and up",
+    "s8_9": "76%",
+    "s8_10": "€132–262",
+    "s8_11": "67%",
+    "s8_12": "€26–131",
+    "s8_13": "31%",
+    "s8_14": "under €26",
+    "s8_15": "10%",
+    "s8_16": "<span class=\"key\">From €263 up, three in four customers pay in six or more installments.</span> Without installment plans, we won’t sell anything in Brazil.",
+    "s8_17": "Only credit card payments are counted; installments exist only there.",
+    "s9_1": "<span class=\"chap-no\"><span class=\"d-new\">2</span></span><span class=\"chap-t\">Product range</span>",
+    "s9_2": "How expensive is tech on Magist?",
+    "s9_3": "Much cheaper than ours: only 23 out of 15,712 items reach our price level.",
+    "s9_4": "How do people pay?",
+    "s9_5": "In installments: almost always for expensive orders.",
+    "s10_1": "<span class=\"chap-no\"><span class=\"d-old\">2</span><span class=\"d-new\">3</span></span><span class=\"chap-t\">Market</span>",
+    "s10_2": "<span class=\"q\">What is the risk?</span>",
+    "s10_3": "<span class=\"q\">Who buys Apple there?</span>",
+    "s10_4": "<span class=\"q\">Is it growing?</span>",
+    "s11_1": "3 · Market",
+    "s11_2": "11<small>days</small>",
+    "s11_3": "In May 2018, truck drivers went on strike over the price of diesel. For eleven days, logistics stood still, and online retail lost around €107 million in sales.",
+    "s11_4": "Why a strike paralyzes so much: how Brazil’s freight travels",
+    "s11_5": "Truck 61%",
+    "s11_6": "other 39%",
+    "s11_7": "Freight",
+    "s11_8": "Source: CNT, 2019",
+    "s11_9": "Can it happen again?",
+    "s11_10": "<b>July 2017</b><span>Petrobras ties the diesel price to the world market. Since then it has followed the oil price and the dollar, and both are rising. At the refinery, diesel becomes 56% more expensive in less than a year.</span>",
+    "s11_11": "<b>May 2018</b><span>Truck drivers can no longer keep their fixed freight rates and strike for eleven days. The government ends the strike with concessions worth 13.5 billion reais.</span>",
+    "s11_12": "<b>Fall 2018</b><span>The link to the world market still applies. If the oil price rises, diesel rises, and the next strike is possible.</span>",
+    "s11_13": "<span class=\"key\">Yes, it can happen again.</span> That is why we need a buffer in the delivery times we promise customers, and a contract clause for events nobody can control.",
+    "s11_14": "<b>Comment</b>The decision takes place in fall 2018, and the data ends in October 2018. So I only use what was known at the time.",
+    "s12_1": "3 · Market",
+    "s12_2": "<small style=\"margin:0 4px 0 0\">€</small>1,900",
+    "s12_3": "That is what the iPhone XS cost in Brazil in October 2018: <b>the most expensive iPhone in the world.</b>",
+    "s12_4": "iPhone XS (256 GB) compared across 40 countries, in US dollars",
+    "s12_5": "cheapest country",
+    "s12_6": "$1,178",
+    "s12_7": "Brazil",
+    "s12_8": "$2,050",
+    "s12_9": "Source: Deutsche Bank Research, 2019",
+    "s12_10": "Still, more people are buying iPhones: share of all smartphones sold",
+    "s12_12": "3.8%",
+    "s12_13": "▲ early 2018",
+    "s12_14": "5.7%",
+    "s12_15": "Source: Counterpoint, 2018",
+    "s12_16": "<span class=\"key\">People buy anyway:</span> in installments, as the Magist data shows, and as a status symbol. Where the gap between rich and poor is wide, status symbols matter more.",
+    "s12_17": "<b>Comment</b>The link between inequality and status consumption comes from research (Walasek &amp; Brown, 2015). Here, as a psychologist, I could add something the data alone doesn’t show.",
+    "s13_1": "3 · Market",
+    "s13_3": "That is how much online retail grew in 2018. The economy as a whole grew by only 1.1%.",
+    "s13_4": "Online retail sales, billions of reais, and growth over the previous year",
+    "s13_5": "35.8 bn",
+    "s13_7": "41.3 bn",
+    "s13_8": "+15%",
+    "s13_10": "44.4 bn",
+    "s13_11": "+7%",
+    "s13_13": "47.7 bn",
+    "s13_14": "+8%",
+    "s13_16": "53.2 bn",
+    "s13_17": "+12%",
+    "s13_19": "<span class=\"key\">After the recession of 2015 and 2016, online retail is growing by double digits again,</span> and even after inflation (3.7%) several times faster than the economy.",
+    "s13_20": "Sources: Ebit Webshoppers 35, 37 and 38 (2017–2019), Tribuna PR (Feb 2019)",
+    "s14_1": "<span class=\"chap-no\"><span class=\"d-new\">3</span></span><span class=\"chap-t\">Market</span>",
+    "s14_2": "What is the risk?",
+    "s14_3": "Logistics: 61% of freight travels by truck, and a strike brings everything to a halt.",
+    "s14_4": "Who buys Apple there?",
+    "s14_5": "Few, but more and more, despite record prices. In installments, as a status symbol.",
+    "s14_6": "Is it growing?",
+    "s14_7": "Yes, by double digits again.",
+    "s15_1": "The most important state",
+    "s15_2": "<span class=\"pos\">São Paulo</span> alone is almost half the market",
+    "s15_4": "of all orders on Magist",
+    "s15_6": "of tech revenue",
+    "s15_8": "delivered within 12 days, after 8.8 days on average",
+    "s15_9": "<span class=\"key\">This is where we reach the most customers, and where delivery is fastest.</span>",
+    "s15_10": "<b>Comment</b>In the end, the group narrowed it down to two cities. I stay with the state, because a distribution contract is tied to regions, not to individual cities.",
+    "s16_1": "Recommendation",
+    "s16_2": "Not <span class=\"pos\">yes</span>, not <span class=\"neg\">no</span>: <span class=\"key\">a trial with an exit clause</span>",
+    "s16_3": "<span class=\"key\">A twelve-month trial, only in the state of São Paulo.</span>",
+    "s16_4": "Every quarter, Magist reports these three figures:",
+    "s16_5": "<b>Delivery within 12 days</b><span>at least 80%</span>",
+    "s16_6": "<b>On time by the promised date</b><span>at least 95%</span>",
+    "s16_7": "<b>Customer rating</b><span>at least 4 stars on average</span>",
+    "s16_8": "Plus one condition: Magist offers installment plans of up to twelve payments and pays us the full price immediately. The installments are Magist’s business, not ours.",
+    "s16_9": "<b>Comment</b>The data speaks against three years, but not against the market. A decision you can reverse limits the risk instead of throwing away an opportunity. The three targets are what São Paulo already achieves today: Magist only has to keep delivering what it already shows.",
+    "s17_1": "Recommendation",
+    "s17_2": "And if it doesn’t work out?",
+    "s17_3": "12-month trial in São Paulo",
+    "s17_4": "<span class=\"pos\">▲ Targets met</span>",
+    "s17_5": "Expand to Minas Gerais and Paraná: together they account for another 17% of all Magist orders.",
+    "s17_6": "<span class=\"neg\">▼ A target missed two quarters in a row</span>",
+    "s17_7": "Exit with 30 days’ notice",
+    "s17_8": "Switch to <span class=\"cmp\">B2W</span> or <span class=\"cmp\">Amazon</span>, measured against the same three targets",
+    "s17_9": "We talk to <span class=\"cmp\">B2W</span> and <span class=\"cmp\">Amazon</span> from the start. Quarters affected by force majeure, meaning events like a strike that Magist cannot control, don’t count.",
+    "s18_1": "Case Study 01 · Magist",
+    "s18_2": "The question",
+    "s18_3": "Should Eniac enter Brazil with Magist as its sales partner?",
+    "s18_4": "The answer",
+    "s18_5": "<span class=\"pos\">Yes</span>, as a trial: <span class=\"key\">twelve months, São Paulo only, with an exit.</span>"
+  };
+  // Beschriftungen für Screenreader (Seiten und Diagramme)
+  var enAria = {
+    "s1_a1": "Question",
+    "s2_a1": "Chapter: Delivery",
+    "s3_a1": "Delivery time",
+    "s3_a2": "São Paulo 80 percent, Minas Gerais 61 percent, Paraná 60 percent, Rio de Janeiro 50 percent; all of Brazil 59 percent",
+    "s4_a1": "Late delivery",
+    "s4_a2": "On time 4.28 stars, late 2.29 stars",
+    "s4_a3": "Only 1 or 2 stars: on time 9 percent, late 62 percent",
+    "s5_a1": "Delivery, answers",
+    "s6_a1": "Chapter: Product range",
+    "s7_a1": "Prices",
+    "s7_a2": "540 euros and up 23 items, 263 to 539 euros 149, 132 to 262 euros 302, 26 to 131 euros 3,967, under 26 euros 11,271",
+    "s8_a1": "Installments",
+    "s8_a2": "263 euros and up 76 percent, 132 to 262 euros 67 percent, 26 to 131 euros 31 percent, under 26 euros 10 percent",
+    "s9_a1": "Product range, answers",
+    "s10_a1": "Chapter: Market",
+    "s11_a1": "Truck strike",
+    "s11_a2": "61 percent of freight by truck, 39 percent by other means",
+    "s12_a1": "iPhone",
+    "s12_a2": "Cheapest country 1,178 dollars, Brazil 2,050 dollars",
+    "s12_a3": "2016 3.8 percent, first quarter of 2018 5.7 percent",
+    "s13_a1": "Online retail",
+    "s13_a2": "2014 35.8 billion, 2015 41.3 plus 15 percent, 2016 44.4 plus 7 percent, 2017 47.7 plus 8 percent, 2018 53.2 plus 12 percent",
+    "s14_a1": "Market, answers",
+    "s15_a1": "São Paulo",
+    "s15_a2": "Map of Brazil, São Paulo highlighted",
+    "s16_a1": "Recommendation",
+    "s17_a1": "Plan B",
+    "s18_a1": "Result"
+  };
+  var lang = "de";
+  function t(key) { return tr[key][lang]; }
+
+  function applyLang() {
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      var k = el.dataset.i18n;
+      if (tr[k]) { el.textContent = t(k); return; }                       // Bedienung: aus tr
+      if (el.__de === undefined) el.__de = el.innerHTML;                   // Bericht: Deutsch aus dem HTML merken
+      var html = lang === "en" && en[k] !== undefined ? en[k] : el.__de;
+      if (el.innerHTML !== html) el.innerHTML = html;
+    });
+    document.querySelectorAll("[data-i18n-aria]").forEach(function (el) {
+      var k = el.dataset.i18nAria;
+      if (tr[k]) { el.setAttribute("aria-label", t(k)); return; }
+      if (el.__deAria === undefined) el.__deAria = el.getAttribute("aria-label");
+      el.setAttribute("aria-label", lang === "en" && enAria[k] !== undefined ? enAria[k] : el.__deAria);
+    });
+    document.documentElement.lang = lang;
+    document.title = t("doc_title");
+    document.querySelectorAll("[data-i18n-title]").forEach(function (el) { el.title = t(el.dataset.i18nTitle); });
+    document.querySelectorAll("[data-set-lang]").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.setLang === lang); });
+    // Texte, die vom Zustand abhängen
+    var mode = document.getElementById("mode"), dev = document.getElementById("devbtn");
+    if (mode) mode.textContent = document.body.classList.contains("all") ? t("mode_steps") : t("mode_all");
+    if (dev) dev.textContent = document.body.classList.contains("devon") ? t("dev_off") : t("dev_on");
+  }
+  function setLang(next, animate) {
+    lang = next === "en" ? "en" : "de";
+    try { localStorage.setItem("lang", lang); } catch (e) {}
+    try { var u = new URL(location.href); if (lang === "de") u.searchParams.delete("lang"); else u.searchParams.set("lang", lang); history.replaceState(null, "", u); } catch (e) {}
+    var calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!animate || calm) { applyLang(); if (window.__render) window.__render(); return; }
+    document.body.classList.add("swap");
+    setTimeout(function () { applyLang(); if (window.__render) window.__render(); document.body.classList.remove("swap"); }, 200);
+  }
+  document.querySelectorAll("[data-set-lang]").forEach(function (b) {
+    b.addEventListener("click", function (e) { e.stopPropagation(); if (b.dataset.setLang !== lang) setLang(b.dataset.setLang, true); });
+  });
+  // Sprache beim Öffnen: 1. ?lang= im Link  2. zuletzt gewählt  3. Browsersprache
+  (function () {
+    var fromUrl = null, saved = null;
+    try { fromUrl = new URLSearchParams(location.search).get("lang"); } catch (e) {}
+    try { saved = localStorage.getItem("lang"); } catch (e) {}
+    var browser = (navigator.language || "de").toLowerCase().indexOf("de") === 0 ? "de" : "en";
+    lang = (fromUrl || saved || browser) === "en" ? "en" : "de";
+    applyLang();
+  })();
+
+  var scenes = Array.prototype.slice.call(document.querySelectorAll('.scene'));
+  var maxStep = scenes.map(function (s) {
+    var m = 1; s.querySelectorAll('[data-step]').forEach(function (e) { m = Math.max(m, +e.dataset.step); }); return m;
+  });
+  var total = maxStep.reduce(function (a, b) { return a + b; }, 0);
+  var cur = 0, step = 1;
+  var $ = function (id) { return document.getElementById(id); };
+
+  function render() {
+    scenes.forEach(function (s, i) {
+      s.classList.toggle('active', i === cur);
+      if (i !== cur) s.querySelectorAll('.in').forEach(function (e) { e.classList.remove('in', 'past'); });
+    });
+    scenes[cur].querySelectorAll('[data-step]').forEach(function (e) {
+      var n = +e.dataset.step;
+      e.classList.toggle('in', n <= step);
+      e.classList.toggle('past', n < step);
+    });
+    $('count').innerHTML = '<b>' + (cur + 1) + '</b> / ' + scenes.length;
+    var done = maxStep.slice(0, cur).reduce(function (a, b) { return a + b; }, 0) + step;
+    $('prog').style.width = (done / total * 100) + '%';
+    $('prev').disabled = false;
+    $('next').disabled = cur === scenes.length - 1 && step === maxStep[cur];
+    $('next').textContent = step === maxStep[cur] && cur < scenes.length - 1 ? t('next_page') : t('next');
+    $('hint').style.opacity = 0;
+    schedule();
+    var newest = scenes[cur].querySelectorAll('[data-step="' + step + '"]');
+    if (step === 1) $('stage').scrollTop = 0;
+    else if (newest.length) newest[newest.length - 1].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+  var busy = false;
+  function next() {
+    if (busy) return;
+    var sc = scenes[cur], nx = scenes[cur + 1];
+    if (step === maxStep[cur] && nx && sc.classList.contains('recap') && nx.classList.contains('intro')
+        && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      busy = true; sc.classList.add('leaving');
+      setTimeout(function () { busy = false; sc.classList.remove('leaving'); cur++; step = 1; render(); }, 800);
+      return;
+    }
+    if (step < maxStep[cur]) step++;
+    else if (cur < scenes.length - 1) { cur++; step = 1; $('hint').style.opacity = 0; }
+    render();
+  }
+  function prev() {
+    if (step > 1) step--;
+    else if (cur > 0) { cur--; step = maxStep[cur]; }
+    else { coverReset(); return; }            // von Seite 1 zurück zum Deckblatt
+    render();
+  }
+  function go(i) { cur = Math.max(0, Math.min(scenes.length - 1, i)); step = 1; render(); }
+
+  $('next').addEventListener('click', function (e) { e.stopPropagation(); next(); });
+  $('prev').addEventListener('click', function (e) { e.stopPropagation(); prev(); });
+  $('stage').addEventListener('click', function (e) {
+    if (document.body.classList.contains('all')) return;
+    if (e.target.closest('a, button')) return;
+    next();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (document.body.classList.contains('all')) return;
+    if (['ArrowRight', ' ', 'PageDown', 'Enter'].indexOf(e.key) > -1) { if (e.target.closest && e.target.closest('button') && e.key !== 'ArrowRight') return; e.preventDefault(); next(); }
+    if (['ArrowLeft', 'PageUp', 'Backspace'].indexOf(e.key) > -1) { e.preventDefault(); prev(); }
+    if (e.key === 'p' || e.key === 'P') setAuto(!auto);
+    if (e.key === 'f' || e.key === 'F') fsToggle();
+  });
+  $('mode').addEventListener('click', function () { setAll(!document.body.classList.contains('all')); });
+  function setAll(on) {
+    document.body.classList.toggle('all', on); if (on) clearTimeout(aT);
+    $('mode').textContent = on ? t('mode_steps') : t('mode_all');
+    if (!on) { document.body.classList.remove('devon'); render(); } else window.scrollTo(0, 0);
+  }
+  $('devbtn').addEventListener('click', function () {
+    var on = document.body.classList.toggle('devon');
+    this.textContent = on ? t('dev_off') : t('dev_on'); this.setAttribute('aria-pressed', on);
+  });
+  $('toAll').addEventListener('click', function (e) { e.stopPropagation(); setAll(true); document.body.classList.add('devon'); $('devbtn').textContent = t('dev_off'); $('devbtn').setAttribute('aria-pressed', true); });
+  $('toStart').addEventListener('click', function (e) { e.stopPropagation(); toCover(); });
+  document.querySelector('.brand').addEventListener('click', function (e) {
+    e.preventDefault(); if (document.body.classList.contains('all')) setAll(false); toCover();
+  });
+
+  // Deckblatt: läuft einmal beim Laden, Klick überspringt
+  var cover = document.getElementById('cover'), cT = [];
+  function cAt(ms, fn) { cT.push(setTimeout(fn, ms)); }
+  function coverEnd() {
+    cT.forEach(clearTimeout); cover.classList.remove('pre');
+    // Logo fährt nur per transform (flüssig, ohne Neuberechnung des Layouts) genau auf das Logo in der Ecke
+    var lg = cover.querySelector('.cover-logo'), a = lg.getBoundingClientRect(), t = document.querySelector('.brand').getBoundingClientRect();
+    lg.style.transition = 'none'; lg.style.left = a.left + 'px'; lg.style.top = a.top + 'px'; lg.style.width = a.width + 'px';
+    lg.style.transformOrigin = '0 0'; lg.style.transform = 'none';
+    void lg.offsetWidth;
+    lg.style.transition = 'transform 1s cubic-bezier(.6,0,.2,1)';
+    lg.style.transform = 'translate(' + (t.left - a.left) + 'px,' + (t.top - a.top) + 'px) scale(' + (t.width / a.width) + ')';
+    cover.classList.add('corner'); document.body.classList.add('reveal');
+    var done = false;
+    function finish() {
+      if (done) return; done = true;
+      document.body.classList.remove('covered', 'reveal');      // Logo in der Ecke wird sichtbar …
+      requestAnimationFrame(function () { cover.classList.add('gone'); lg.style.cssText = ''; schedule(); });   // … erst dann verschwindet das fahrende
+    }
+    lg.addEventListener('transitionend', function te(e) { if (e.target === lg) { lg.removeEventListener('transitionend', te); finish(); } });
+    setTimeout(finish, 1500);
+  }
+  var started = false;
+  function coverReset() {
+    cT.forEach(clearTimeout); started = false;
+    cover.querySelectorAll('.cut').forEach(function (c) { c.style.cssText = ''; });
+    cover.querySelector('.cover-logo').style.cssText = '';
+    cover.classList.remove('gone', 'started', 'corner', 'show-title', 'context');
+    cover.classList.add('pre', 'waiting');
+    document.body.classList.remove('reveal'); document.body.classList.add('covered');
+  }
+  document.body.classList.add('covered'); cover.classList.add('pre', 'waiting');
+  function showContext() { cT.forEach(clearTimeout); cover.classList.remove('pre'); cover.classList.add('show-title', 'context');
+    if (auto) cAt(readTime(document.getElementById('coverCtx')) + 1500, coverEnd); }
+  function coverStart() {
+    if (started) { if (cover.classList.contains('context')) coverEnd(); else showContext(); return; }
+    started = true; cover.classList.remove('waiting'); cover.classList.add('started');
+    void cover.offsetWidth;
+    cAt(250, function () { var c = cover.querySelector('.cut'); c.style.opacity = 1; c.style.transform = 'none'; });
+    cAt(530, function () { cover.classList.remove('pre'); });
+    cAt(1250, function () { cover.classList.add('show-title'); });
+    cAt(2650, showContext);
+  }
+  cover.addEventListener('click', function () { if (started) coverStart(); });   // vor dem Start entscheidet die Auswahl
+  document.addEventListener('keydown', function (e) {
+    if (cover.classList.contains('gone')) return;
+    if (!started && e.target.closest && e.target.closest('.pick, .fs, .cover-lang')) return;   // Fokus auf einem Knopf: der Knopf entscheidet
+    if ([' ', 'Enter', 'ArrowRight'].indexOf(e.key) > -1) { e.preventDefault(); e.stopImmediatePropagation(); if (!started) setAuto(auto); else coverStart(); }
+  }, true);
+
+  // ---------- Automatisch abspielen ----------
+  var auto = true, aT = null;
+  function readTime(el) {                    // Lesezeit: 35 ms pro Zeichen, mindestens 1,8 s, höchstens 14 s
+    var n = (el.textContent || '').replace(/\s+/g, ' ').trim().length;
+    return Math.max(1800, Math.min(14000, 1200 + n * 35));
+  }
+  function stepDelay() {
+    var els = scenes[cur].querySelectorAll('[data-step="' + step + '"]'), t = 0, extra = 0;
+    els.forEach(function (e) {
+      if (e.closest('svg') && e.tagName.toLowerCase() === 'g') { extra = Math.max(extra, e.classList.contains('race') ? 3200 : 1600); return; }
+      if (e.closest('[data-step]') !== e) return;
+      t += readTime(e) - 1200;
+      if (e.querySelector('svg')) extra = Math.max(extra, 1600);
+      if (e.classList.contains('ring') || e.classList.contains('mapbox')) extra = Math.max(extra, 2000);
+    });
+    if (scenes[cur].classList.contains('intro') && step === 1) extra = Math.max(extra, 2400);
+    return Math.max(1800, Math.min(15000, 1400 + t + extra));
+  }
+  function atEnd() { return cur === scenes.length - 1 && step === maxStep[cur]; }
+  function schedule() {
+    clearTimeout(aT);
+    if (!auto || document.body.classList.contains('all') || !cover.classList.contains('gone') || atEnd()) return;
+    aT = setTimeout(function () { next(); }, stepDelay());
+  }
+  function setAuto(on) {
+    auto = on; $('auto').textContent = on ? '❚❚ Auto' : '▶ Auto'; $('auto').setAttribute('aria-pressed', on);
+    if (on) { if (!cover.classList.contains('gone')) { if (!started) cAt(400, coverStart); else if (cover.classList.contains('context')) cAt(1500, coverEnd); } schedule(); }
+    else { clearTimeout(aT); cT.forEach(clearTimeout); }
+  }
+  $('auto').addEventListener('click', function (e) { e.stopPropagation(); setAuto(!auto); });
+  function toCover() {
+    clearTimeout(aT); cur = 0; step = 1; render(); coverReset();
+  }
+  function fsToggle(on) {
+    try {
+      var d = document, isFs = !!d.fullscreenElement;
+      if (on === undefined) on = !isFs;
+      if (on && !isFs && d.documentElement.requestFullscreen) d.documentElement.requestFullscreen().catch(function () {});
+      if (!on && isFs && d.exitFullscreen) d.exitFullscreen().catch(function () {});
+    } catch (err) {}
+  }
+  $('fsbtn').addEventListener('click', function (e) { e.stopPropagation(); fsToggle(); });
+  document.querySelectorAll('.pick').forEach(function (b) {
+    b.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if ($('fsOn').checked) fsToggle(true);
+      var m = b.dataset.mode;
+      if (m === 'all') { setAuto(false); cover.classList.add('gone'); document.body.classList.remove('covered'); setAll(true); return; }
+      if (m === 'manual') { setAuto(false); coverStart(); return; }
+      setAuto(true);
+    });
+  });
+
+  var h = (location.hash || '').replace('#s', '');
+  if (/^\d+$/.test(h)) cur = Math.max(0, Math.min(scenes.length - 1, h - 1));
+  window.__render = render;
+  render();
+})();
+</script>

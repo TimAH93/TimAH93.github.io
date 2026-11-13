@@ -1,210 +1,219 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tim Aßmann – Data Analytics Portfolio</title>
-  <meta name="description" content="Data analytics portfolio of Tim Aßmann: projects with SQL, Tableau and Python.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #0f1115;
-      --surface: #171a21;
-      --border: #262a33;
-      --text: #e6e8ec;
-      --muted: #9aa1ad;
-      --accent: #7aa2f7;
-      --status-bg: #2a2416;
-      --status-text: #e0b860;
-    }
+<!DOCTYPE html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fallstudie Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@300;500&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: Logo oben, ein Satz, dann die Fälle als Kacheln. Jede Kachel trägt Nummer, Titel, Frage und ihren eigenen Schnitt. */
+:root {
+  --bg: #000000; --panel: #0C0B0D; --line: #222024; --fg: #F2F2F2; --muted: #8D8890; --dim: #55515A;
+  --display: "Antonio", "Oswald", "Arial Narrow", sans-serif;
+  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 18px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); padding-block: 28px 80px; }
 
-    * { box-sizing: border-box; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 16px; font: 500 12px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.top .name { text-transform: none; letter-spacing: .04em; font-size: 14px; color: var(--fg); }
+.top a { color: var(--muted); text-decoration: none; }
+.top a:hover, .top a[aria-current] { color: var(--fg); }
+.top a:focus-visible { outline: 1px solid var(--fg); outline-offset: 3px; }
+/* Sprachwahl */
+.lang { display: flex; align-items: center; gap: 10px; }
+.lang button { font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--muted); background: none; border: 0; padding: 6px 2px; cursor: pointer; }
+.lang button:hover, .lang button[aria-pressed="true"] { color: var(--fg); }
+.lang button[aria-pressed="true"] { box-shadow: inset 0 -1px 0 var(--fg); }
+.lang button:focus-visible { outline: 1px solid var(--fg); outline-offset: 3px; }
+/* kurzer Wechsel: Text blendet aus, wird getauscht, blendet ein */
+[data-i18n] { transition: opacity .2s ease; }
+body.swap [data-i18n] { opacity: 0; }
+.tile .note { display: block; margin-top: 10px; font: 400 12px var(--mono); letter-spacing: .06em; color: var(--dim); }
+.tile .note:empty { display: none; }
+.tile .note { padding-right: 64px; }
+@media (prefers-reduced-motion: reduce) { [data-i18n] { transition: none; } }
 
-    html { color-scheme: dark; }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: end; padding: 64px 0 56px; border-bottom: 1px solid var(--line); }
+.hero .logo { width: min(420px, 100%); }
+.hero .logo svg { display: block; width: 100%; height: auto; }
+.claim { margin: 0; font-size: clamp(22px, 2.4vw, 30px); line-height: 1.3; max-width: 22em; }
+.claim small { display: block; margin-top: 14px; font-size: 17px; color: var(--muted); max-width: 36em; }
 
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-      font-size: 16px;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-    }
+.list-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 36px 0 20px; font: 500 12px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.list-head b { color: var(--fg); font-weight: 500; }
 
-    main {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 72px 20px 48px;
-    }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; list-style: none; margin: 0; padding: 0; }
+.tile { position: relative; display: grid; grid-template-rows: auto 1fr auto; gap: 22px; min-height: 380px; padding: 24px 24px 22px; background: var(--panel); border: 1px solid var(--line); text-decoration: none; color: inherit; overflow: hidden;
+  transition: border-color .25s ease, transform .35s cubic-bezier(.2,.7,.2,1); }
+.tile:hover, .tile:focus-visible { border-color: var(--dim); transform: translateY(-4px); outline: none; }
+.tile:focus-visible { border-color: var(--fg); }
+.tile.soon { cursor: default; }
+.tile.soon:hover { transform: none; border-color: var(--line); }
+.tile .head { display: flex; justify-content: space-between; align-items: flex-start; }
+.tile .no { font: 300 clamp(64px, 7vw, 96px)/.85 var(--display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.tile .status { font: 500 11px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding-top: 8px; text-align: right; }
+.tile .status.live { color: var(--fg); }
+.tile h2 { font: 500 clamp(26px, 2.4vw, 32px)/1.05 var(--display); text-transform: uppercase; letter-spacing: .02em; margin: 0 0 10px; text-wrap: balance; }
+.tile p { margin: 0; color: var(--muted); font-size: 17px; max-width: 28em; }
+.tile .meta { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; font: 400 12px var(--mono); letter-spacing: .08em; color: var(--dim); }
+.tile .meta b { font-weight: 500; color: var(--muted); }
+/* der Schnitt: pro Fall ein eigener Verlauf */
+.tile .cut { position: absolute; right: 22px; bottom: 58px; width: 46px; height: 120px; transform-origin: 50% 50%; transition: transform .45s cubic-bezier(.2,.7,.2,1); }
+.tile:hover .cut, .tile:focus-visible .cut { transform: scale(1.12); }
+.tile .cut svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.tile.soon .cut { opacity: .45; }
 
-    header { margin-bottom: 56px; }
+/* Kacheln kommen nacheinander herein */
+.tile { opacity: 0; transform: translateY(14px); animation: rise .6s cubic-bezier(.2,.7,.2,1) forwards; }
+.tile:nth-child(1) { animation-delay: .15s; } .tile:nth-child(2) { animation-delay: .3s; } .tile:nth-child(3) { animation-delay: .45s; } .tile:nth-child(4) { animation-delay: .6s; }
+@keyframes rise { to { opacity: 1; transform: none; } }
+.tile:hover { animation: none; opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .tile { animation: none; opacity: 1; transform: none; transition: none; } }
 
-    .lang {
-      text-align: right;
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin-bottom: 32px;
-    }
+.tiles li.wide { grid-column: 1 / -1; }
+.tile.doc { min-height: 0; grid-template-rows: auto auto auto; }
+.tile.doc p { max-width: 46em; }
+.tile .no small { display: block; margin-top: 10px; font: 500 12px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.list-head:nth-of-type(2) { padding-top: 56px; }
+.foot { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 24px; font: 400 12px var(--mono); letter-spacing: .08em; color: var(--dim); }
+.foot a { color: var(--muted); text-decoration: none; } .foot a:hover { color: var(--fg); }
 
-    h1 {
-      font-size: clamp(1.9rem, 5vw, 2.5rem);
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1.2;
-      margin: 0 0 16px;
-    }
+@media (max-width: 900px) { .tiles { grid-template-columns: 1fr 1fr; } }
+.tile { min-height: 340px; }
+@media (max-width: 640px) {
+  body { font-size: 17px; }
+  .wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .hero { grid-template-columns: 1fr; gap: 28px; padding: 40px 0 36px; }
+  .hero .logo { width: min(300px, 80%); }
+  .tiles { grid-template-columns: 1fr; }
+  .tile { min-height: 0; }
+  .tile .cut { bottom: 54px; height: 100px; width: 38px; }
+}
+</style>
 
-    .lead {
-      color: var(--muted);
-      font-size: 1.1rem;
-      margin: 0;
-      max-width: 60ch;
-    }
+<div class="wrap">
+  <nav class="top" data-i18n-aria="nav_label" aria-label="Name und Sprache">
+    <span class="name">Tim Aßmann</span>
+    <span class="lang" role="group" aria-label="Sprache / Language"><button type="button" data-set-lang="de" lang="de" aria-pressed="true">DE</button><span aria-hidden="true">·</span><button type="button" data-set-lang="en" lang="en" aria-pressed="false">EN</button></span>
+  </nav>
 
-    section { margin-bottom: 48px; }
+  <header class="hero">
+    <div class="logo"><svg xmlns="http://www.w3.org/2000/svg" class="logo-svg" role="img" aria-label="Fallstudie" viewBox="248 18 664 340"><defs><linearGradient id="fsg" gradientUnits="userSpaceOnUse" x1="600" y1="28" x2="425" y2="345"><stop offset="0" stop-color="#FFE14D"/><stop offset="0.5" stop-color="#FF7A1A"/><stop offset="1" stop-color="#FF2D95"/></linearGradient></defs><g transform="matrix(1 0 -0.2126 1 23.59 0)"><path fill="#F2F2F2" d="M280.9304064512253 182.0V40.203125H321.18493139743805V52.09106606245041H295.441073179245V99.87114441394806H319.68150049448013V111.95618402957916H295.441073179245V182.0ZM328.3565099835396 182.0 350.4431923031807 40.203125H367.0155506134033L391.2516211271286 182.0H377.375424683094L373.05937844514847 153.99457824230194H346.17182540893555L342.2140105366707 182.0ZM347.88098978996277 142.50946921110153H371.18044632673264L359.15450382232666 64.95721232891083H358.94877034425735ZM405.1115587949753 182.0V40.203125H419.702791929245V170.1293287873268H445.41931933164597V182.0ZM457.2521837949753 182.0V40.203125H471.843416929245V170.1293287873268H497.55994433164597V182.0Z"/></g><g transform="matrix(1 0 -0.2126 1 48.68 0)"><path fill="#F2F2F2" d="M571.8710042834282 301.611328125Q563.3223302960396 301.611328125 558.1221926510334 298.3656585216522Q552.9220550060272 295.11998891830444 550.2374588251114 289.273893982172Q547.5528626441956 283.4277990460396 546.6270619928837 275.5812093615532Q545.7012613415718 267.7346196770668 545.7012613415718 258.4881788492203V244.31570023298264H559.9169932603836V258.73708695173264Q559.9169932603836 275.1164674758911 562.2677974700928 282.22282871603966Q564.6186016798019 289.3291899561882 572.283897280693 289.3291899561882Q577.6300369501114 289.3291899561882 580.0340767502785 286.763304322958Q582.4381165504456 284.1974186897278 583.0826478004456 278.61821472644806Q583.7271790504456 273.03901076316833 583.7271790504456 263.98539036512375Q583.7271790504456 253.83117109537125 580.6713991165161 247.0369751751423Q577.6156191825867 240.24277925491333 571.0437135696411 233.92263382673264L562.1741999983788 225.34084618091583Q558.2178111672401 221.4837196469307 554.2067607045174 216.69936642050743Q550.1957102417946 211.91501319408417 547.4960226118565 205.69341704249382Q544.7963349819183 199.47182089090347 544.7963349819183 191.42381519079208Q544.7963349819183 180.92427760362625 546.8543827831745 173.0553875863552Q548.9124305844307 165.18649756908417 554.6046015918255 160.79059794545174Q560.2967725992203 156.3946983218193 571.1459066271782 156.3946983218193Q579.8024778366089 156.3946983218193 584.8371652066708 159.53750118613243Q589.8718525767326 162.68030405044556 592.2744663357735 168.39691445231438Q594.6770800948143 174.1135248541832 595.3611815273762 181.83063000440598Q596.045282959938 189.54773515462875 596.045282959938 198.73230546712875V206.93138301372528H582.4309076666832V197.71227300167084Q582.4309076666832 187.11355179548264 581.530298769474 180.77760189771652Q580.6296898722649 174.4416519999504 578.2472373843193 171.6131928563118Q575.8647848963737 168.7847337126732 571.2178381085396 168.7847337126732Q566.901791870594 168.7847337126732 564.1841213703156 170.70466205477715Q561.4664508700371 172.6245903968811 560.2486068308353 177.1111173927784Q559.0307627916336 181.5976443886757 559.0307627916336 189.40965503454208Q559.0307627916336 195.5528238415718 560.472323179245 199.43438977003098Q561.9138835668564 203.31595569849014 564.8552704155445 206.56594276428223Q567.7966572642326 209.8159298300743 572.1127035021782 214.26577806472778L580.9534602165222 223.38277369737625Q588.7870975136757 231.32288217544556 593.5175021290779 241.06638684868813Q598.2479067444801 250.8098915219307 598.2479067444801 264.29323822259903Q598.2479067444801 275.6243446469307 596.149575740099 284.0118858218193Q594.0512447357178 292.3994269967079 588.3856915235519 297.00537756085396Q582.7201383113861 301.611328125 571.8710042834282 301.611328125ZM618.6683416962624 300.0V170.0464653968811H603.3981162905693V158.203125H647.186076104641V170.0464653968811H633.1790084242821V300.0ZM684.9074885475225 301.6559287905693Q674.6488233804703 301.6559287905693 668.8091849684715 297.5067588686943Q662.9695465564728 293.3575889468193 660.5626153349876 284.90832278454627Q658.1556841135025 276.45905662227324 658.1556841135025 263.583984375V158.203125H672.7469172477722V263.18115234375Q672.7469172477722 271.5183100104332 673.3468478322029 277.4104316532612Q673.9467784166336 283.3025532960892 676.5226040782056 286.38277262449265Q679.0984297397778 289.4629919528961 684.9369679060079 289.4629919528961Q690.8613669276237 289.4629919528961 693.3416556715965 286.38277262449265Q695.8219444155693 283.3025532960892 696.3456260561943 277.4507148563862Q696.8693076968193 271.5988764166832 696.8693076968193 263.26171875V158.203125H711.4159401655197V263.583984375Q711.4159401655197 276.45905662227324 709.0895753502846 284.90832278454627Q706.7632105350494 293.3575889468193 701.0041385293007 297.5067588686943Q695.2450665235519 301.6559287905693 684.9074885475225 301.6559287905693ZM732.9181994199753 300.0V158.203125H757.4277354478836Q768.7257282137871 158.203125 774.7854785323143 162.97955632209778Q780.8452288508415 167.75598764419556 783.162958741188 176.59238755702972Q785.4806886315346 185.4287874698639 785.4806886315346 197.57704496383667L785.5252892971039 259.1715279221535Q785.5252892971039 273.69217693805695 782.7371133565903 282.68396615982056Q779.9489374160767 291.67575538158417 773.6697882115841 295.8378776907921Q767.3906390070915 300.0 756.8997363448143 300.0ZM747.428866147995 287.9480740427971H756.5803228020668Q761.415733218193 287.9480740427971 764.5945018231869 285.77638551592827Q767.7732704281807 283.60469698905945 769.3536632955074 277.5773473083973Q770.9340561628342 271.54999762773514 770.9340561628342 260.0592631101608V196.77858978509903Q770.9340561628342 182.3615598678589 767.576171875 176.16947293281555Q764.2182875871658 169.97738599777222 756.904014468193 169.97738599777222H747.428866147995ZM806.4002871513367 300.0V158.203125H820.9915202856064V300.0ZM843.8864611387253 300.0V158.203125H884.0704806447029V170.0464653968811H858.477694272995V221.64049565792084H882.6289202570915V233.6636647582054H858.477694272995V288.0847281217575H884.140986084938V300.0Z"/></g><polygon points="600,28 508.1,184.1 425,345 516.9,188.9" fill="url(#fsg)"/></svg></div>
+    <p class="claim"><span data-i18n="claim">Daten in Entscheidungen übersetzen, die Menschen verstehen und treffen können.</span>
+      <small data-i18n="claim_sub">Fallstudie ist meine Reihe kurzer Berichte: eine echte Frage, ein Datensatz, eine Empfehlung. Jeder Fall dauert etwa drei Minuten, Seite für Seite.</small></p>
+  </header>
 
-    h2 {
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      margin: 0 0 16px;
-    }
+  <div class="list-head"><span><b>2</b> <span data-i18n="cases">Fälle</span></span><span data-i18n="click">Klick öffnet den Fall</span></div>
 
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+  <ul class="tiles">
+    <li><a class="tile" href="faelle/01-magist/index.html" data-lang-link>
+      <div class="head"><span class="no">01</span><span class="status live" data-i18n="live">Online</span></div>
+      <div><h2>Magist</h2><p data-i18n="q1">Soll Eniac mit Magist als Vertriebspartner nach Brasilien?</p><span class="note" data-i18n="note1"></span></div>
+      <div class="meta"><span><b>SQL</b> · <span data-i18n="research">Marktrecherche</span></span><span>2026</span></div>
+      <span class="cut" aria-hidden="true"><svg viewBox="0 0 46 120"><defs><linearGradient id="g1" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE14D"/><stop offset=".5" stop-color="#FF7A1A"/><stop offset="1" stop-color="#FF2D95"/></linearGradient></defs><polygon points="44,0 25.5,58 2,120 20.5,62" fill="url(#g1)"/></svg></span>
+    </a></li>
 
-    .table-wrap {
-      overflow-x: auto;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: var(--surface);
-    }
+    <li><a class="tile" href="https://github.com/TimAH93/TimAH93.github.io/blob/main/projects/eniac-rabatte/README.de.md">
+      <div class="head"><span class="no">02</span><span class="status live" data-i18n="live">Online</span></div>
+      <div><h2>Eniac</h2><p data-i18n="q2">Lohnt es sich für Eniac, Rabatte zu geben? 227.000 Bestellungen, 14 Monate, jeder Schritt als Code.</p><span class="note" data-i18n="note2"></span></div>
+      <div class="meta"><span><b>Python</b> · pandas</span><span>2026</span></div>
+      <span class="cut" aria-hidden="true"><svg viewBox="0 0 46 120"><defs><linearGradient id="g2" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3DA5FF"/><stop offset=".5" stop-color="#8B5CFF"/><stop offset="1" stop-color="#FF2D95"/></linearGradient></defs><polygon points="44,0 25.5,58 2,120 20.5,62" fill="url(#g2)"/></svg></span>
+    </a></li>
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.95rem;
-    }
 
-    th, td {
-      text-align: left;
-      padding: 14px 16px;
-      vertical-align: top;
-    }
+  </ul>
 
-    th {
-      font-weight: 500;
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
-    }
+  <footer class="foot">
+    <span data-i18n="foot">Fallstudie · Datenanalyse</span>
+    <span><a href="https://github.com/TimAH93">GitHub</a></span>
+  </footer>
+</div>
 
-    td.project { font-weight: 600; white-space: nowrap; }
-    td .source { display: block; color: var(--muted); font-size: 0.85rem; }
+<script>
+/* ---------- Übersetzungen ----------
+   Jeder Text im HTML trägt einen Schlüssel: data-i18n="claim".
+   Hier steht pro Schlüssel eine Fassung pro Sprache. */
+var tr = {
+  nav_label: { de: "Name und Sprache", en: "Name and language" },
+  claim:     { de: "Daten in Entscheidungen übersetzen, die Menschen verstehen und treffen können.",
+               en: "Turning data into decisions people can understand and make." },
+  claim_sub: { de: "Fallstudie ist meine Reihe kurzer Berichte: eine echte Frage, ein Datensatz, eine Empfehlung. Jeder Fall dauert etwa drei Minuten, Seite für Seite.",
+               en: "Fallstudie, German for “case study”, is my series of short reports: one real question, one dataset, one recommendation. Each case takes about three minutes, page by page." },
+  cases:     { de: "Fälle", en: "cases" },
+  click:     { de: "Klick öffnet den Fall", en: "Click to open the case" },
+  live:      { de: "Online", en: "Online" },
+  wip:       { de: "In Arbeit", en: "In progress" },
+  planned:   { de: "Geplant", en: "Planned" },
+  research:  { de: "Marktrecherche", en: "Market research" },
+  q1:        { de: "Soll Eniac mit Magist als Vertriebspartner nach Brasilien?",
+               en: "Should Eniac enter Brazil with Magist as its sales partner?" },
+  note1:     { de: "", en: "Report in German · English version coming soon" },
+  note2:     { de: "", en: "Report in German · English version coming soon" },
+  q2:        { de: "Lohnt es sich für Eniac, Rabatte zu geben? 227.000 Bestellungen, 14 Monate, jeder Schritt als Code.",
+               en: "Is it worth it for Eniac to offer discounts? 227,000 orders, 14 months, every step shown as code." },
+  t3:        { de: "Lieferung & Treue", en: "Delivery & Loyalty" },
+  q3:        { de: "Kosten verspätete Lieferungen Kundentreue? Olist, 100.000 Bestellungen aus Brasilien.",
+               en: "Do late deliveries cost customer loyalty? Olist, 100,000 orders from Brazil." },
+  q4:        { de: "Wo verdient ein Händler Geld, und wo verliert er es? Der Tableau-Klassiker, neu gelesen.",
+               en: "Where does a retailer make money, and where does it lose it? The Tableau classic, read anew." },
+  docs:      { de: "Projektdokumentation", en: "Project documentation" },
+  docs_r:    { de: "Teamarbeit im Kurs", en: "Team work in the course" },
+  doc_tag:   { de: "Dokumentation", en: "Documentation" },
+  part1:     { de: "Teil 1 fertig", en: "Part 1 done" },
+  doc_t:     { de: "Eniac · Datenbereinigung", en: "Eniac · Data cleaning" },
+  doc_q:     { de: "Wie wir als Team Discount Detectives die Rohdaten bereinigt und zu einer Analyse-Tabelle zusammengeführt haben: wer welchen Teil übernommen hat und welche Entscheidungen wir getroffen haben.",
+               en: "How we, team Discount Detectives, cleaned the raw data and merged it into one analysis table: who took which part and which decisions we made." },
+  team:      { de: "Teamarbeit", en: "Team work" },
+  foot:      { de: "Fallstudie · Datenanalyse", en: "Fallstudie · Data analysis" }
+};
 
-    .status {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 999px;
-      background: var(--status-bg);
-      color: var(--status-text);
-      font-size: 0.8rem;
-      font-weight: 500;
-      white-space: nowrap;
-    }
+/* Text zu einem Schlüssel in der aktuellen Sprache */
+var lang = "de";
+function t(key) { return tr[key][lang]; }
 
-    .status.done {
-      background: #16291f;
-      color: #7fcf9a;
-    }
+/* Alles auf der Seite in eine Sprache setzen */
+function apply() {
+  document.querySelectorAll("[data-i18n]").forEach(function (el) { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-aria]").forEach(function (el) { el.setAttribute("aria-label", t(el.dataset.i18nAria)); });
+  document.querySelectorAll("[data-set-lang]").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.setLang === lang); });
+  /* Kachel-Links nehmen die Sprache mit: faelle/01-magist/?lang=en */
+  document.querySelectorAll("[data-lang-link]").forEach(function (a) {
+    var base = a.getAttribute("href").split("?")[0];
+    a.setAttribute("href", lang === "de" ? base : base + "?lang=" + lang);
+  });
+  document.documentElement.lang = lang;
+}
 
-    ul.skills {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
+function setLang(next, animate) {
+  if (next !== "de" && next !== "en") next = "de";
+  lang = next;
+  try { localStorage.setItem("lang", lang); } catch (e) {}
+  /* Adresszeile mitführen, damit ein kopierter Link die Sprache behält */
+  try { var u = new URL(location.href); if (lang === "de") u.searchParams.delete("lang"); else u.searchParams.set("lang", lang); history.replaceState(null, "", u); } catch (e) {}
+  var calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!animate || calm) { apply(); return; }
+  document.body.classList.add("swap");
+  setTimeout(function () { apply(); document.body.classList.remove("swap"); }, 200);
+}
 
-    ul.skills li {
-      padding: 6px 14px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: var(--surface);
-      font-size: 0.9rem;
-    }
+document.querySelectorAll("[data-set-lang]").forEach(function (b) {
+  b.addEventListener("click", function () { if (b.dataset.setLang !== lang) setLang(b.dataset.setLang, true); });
+});
 
-    footer {
-      color: var(--muted);
-      font-size: 0.85rem;
-      border-top: 1px solid var(--border);
-      padding-top: 24px;
-    }
-  </style>
-</head>
-<body>
-  <main>
-    <nav class="lang"><strong>English</strong> · <a href="index.de.html" hreflang="de" lang="de">Deutsch</a></nav>
-    <header>
-      <h1>Tim Aßmann</h1>
-      <p class="lead">Psychologist currently training in Data Analytics &amp; AI, focused on presenting data clearly with Tableau, SQL and Python. This portfolio collects independent projects built on public datasets.</p>
-    </header>
-
-    <section>
-      <h2>Projects</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>Project</th><th>Question</th><th>Tools</th><th>Status</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="project"><a href="https://github.com/TimAH93/TimAH93.github.io/tree/main/projects/magist-eniac">Eniac &amp; Magist</a></td>
-              <td>Is a Brazilian marketplace the right partner for a premium tech retailer?<span class="source">Group project · Olist-based Magist database</span></td>
-              <td>SQL, Tableau</td>
-              <td><span class="status done">Completed</span></td>
-            </tr>
-            <tr>
-              <td class="project"><a href="https://github.com/TimAH93/TimAH93.github.io/tree/main/projects/eniac-rabatte">Eniac Discounts</a></td>
-              <td>Do an online retailer's discounts pay off?<span class="source">Group project · course case study</span></td>
-              <td>Python (pandas, matplotlib)</td>
-              <td><span class="status done">Completed</span></td>
-            </tr>
-            <tr>
-              <td class="project"><a href="https://github.com/TimAH93/TimAH93.github.io/tree/main/projects/delivery-loyalty">Delivery &amp; Loyalty</a></td>
-              <td>Do late deliveries cost customer loyalty?<span class="source">Olist Brazilian E-Commerce dataset</span></td>
-              <td>SQL, Tableau</td>
-              <td><span class="status">In progress</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section>
-      <h2>Skills</h2>
-      <ul class="skills">
-        <li>SQL (MySQL)</li>
-        <li>Tableau</li>
-        <li>Python (pandas, matplotlib)</li>
-        <li>Google Sheets</li>
-      </ul>
-    </section>
-
-    <section>
-      <h2>Contact</h2>
-      <p>GitHub: <a href="https://github.com/TimAH93">TimAH93</a></p>
-    </section>
-
-    <footer>
-      Data sources and licenses are credited on each project page.
-    </footer>
-  </main>
-</body>
-</html>
+/* Welche Sprache beim Öffnen?  1. ?lang= im Link  2. zuletzt gewählt  3. Browsersprache */
+(function () {
+  var fromUrl = null, saved = null;
+  try { fromUrl = new URLSearchParams(location.search).get("lang"); } catch (e) {}
+  try { saved = localStorage.getItem("lang"); } catch (e) {}
+  var browser = (navigator.language || "de").toLowerCase().indexOf("de") === 0 ? "de" : "en";
+  lang = fromUrl || saved || browser;
+  if (lang !== "de" && lang !== "en") lang = "de";
+  apply();
+})();
+</script>
