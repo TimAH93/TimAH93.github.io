@@ -16,10 +16,13 @@ Website: https://timah93.github.io
 
 ## Skills
 
-- SQL (MySQL)
-- Tableau
-- Python (pandas, matplotlib)
-- Google Sheets
+| Area | Tools |
+|---|---|
+| Databases | SQL (MySQL) |
+| Programming | Python: pandas, NumPy, Jupyter Notebook; PCEP certification (in preparation) |
+| Visualisation | matplotlib, seaborn, Pillow (animated charts), Tableau |
+| Spreadsheets | Google Sheets |
+| Workflow | Git, GitHub |
 
 ## Contact
 
