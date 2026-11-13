@@ -122,22 +122,30 @@ Deshalb behaupten wir nicht, dass Rabatte Verlust machen, sondern schlagen Tests
 
 ## Mein Beitrag
 
-| Person | Teil der Präsentation |
+Präsentiert haben wir zu dritt. Organisation, Code und Gestaltung lagen überwiegend bei mir.
+
+#### Was ich umgesetzt habe
+
+- **Projektorganisation:** Gruppendokument mit Fragenbaum aufgebaut: Leitfrage, Teilfragen F1 bis F6, Zuständigkeiten und eine einheitliche Vorlage für die Antworten
+- **Bereinigung von orders und orderlines:** 36.169 Preise mit zwei Punkten repariert statt gelöscht, weil sonst rund 46 % des Umsatzes gefehlt hätten
+- **Analyse der Preise und Preisklassen** (Teilfrage F4)
+- **Finaler Code:** auf Basis der ersten Fassungen von Walter und Miguel überarbeitet und vereinheitlicht; ein Notebook, das alle Zahlen der Präsentation aus den Rohdaten nachrechnet
+- **Storyline und Aufbau der Präsentation:** Hauptfrage, zwei Teilfragen, Antwort, Empfehlung
+- **Gestaltung:** alle Folien, Diagramme und Animationen entworfen und umgesetzt; das Team hat diesen Stil für die gesamte Präsentation übernommen
+- **Empfehlung mit Beispielrechnung:** 105.000 € pro Prozentpunkt, 4,5 % Puffer, Umschichtung des Rabatts
+- **Vorbereitung auf Rückfragen:** Fragen gesammelt und priorisiert, Anhang mit verlinkter Übersicht gebaut
+
+Walter hat die ersten Analysen zu Umsatz und Rabatten gemacht und die fehlerhaften Preisformate im Katalog sichtbar gemacht. Die Regeln für die Bereinigung haben wir gemeinsam festgelegt.
+
+#### Vortrag
+
+| | Teil der Präsentation |
 |---|---|
-| **Walter** | Datengrundlage, Anteil rabattierter Positionen, Monatsverlauf, Macs |
-| **Miguel** | Markenverteilung, Preisklassen, Apple gegen andere Marken |
-| **Tim** | Einstieg und Agenda, Zwischenfazits, Antwort, Empfehlung, Beispielrechnung, Anhang |
+| Walter | Datengrundlage, Anteil rabattierter Positionen, Monatsverlauf, Macs |
+| Miguel | Markenverteilung, Preisklassen, Apple gegen andere Marken |
+| Tim | Einstieg und Agenda, Zwischenfazits, Antwort, Empfehlung, Anhang |
 
-Die Regeln für die Datenbereinigung haben wir gemeinsam im Team festgelegt.
-
-**Meine Aufgaben:**
-- Konzept und Storyline: Hauptfrage, zwei Teilfragen, Antwort, Empfehlung
-- Gestaltung und Umsetzung der gesamten Präsentation: Folien, alle Diagramme und Animationen
-- Empfehlung mit Beispielrechnung (105.000 € pro Prozentpunkt, 4,5 % Puffer, Umschichtung)
-- Vorbereitung der Rückfragen: Fragen gesammelt und priorisiert, Anhang A1 bis A7 mit verlinkter Übersicht
-- Finales Notebook: Code auf Basis der ersten Fassungen von Walter und Miguel überarbeitet und vereinheitlicht
-
-**Arbeitsweise:** Code mit KI-Unterstützung erstellt; Fragestellung, Analyse, Auswahl, Gestaltung und Prüfung durch mich.
+Die Präsentation wurde im Kurs als beste bewertet; die einzige Rückfrage, wie wir die Empfehlung testen würden, ließ sich mit einer vorbereiteten Anhangfolie beantworten.
 
 ### Wichtigste Erkenntnisse
 

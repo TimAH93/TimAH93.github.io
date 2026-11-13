@@ -122,22 +122,30 @@ That is why we do not claim that discounts lose money, and propose tests instead
 
 ## My Contribution
 
-| Person | Part of the presentation |
+The three of us presented together. Organisation, code and design were mostly my part.
+
+#### What I built
+
+- **Project organisation:** set up the group document with a question tree: main question, sub-questions F1 to F6, owners and a consistent template for the answers
+- **Cleaning orders and orderlines:** repaired 36,169 prices with two dots instead of deleting them, because otherwise about 46% of revenue would have been missing
+- **Analysis of prices and price classes** (sub-question F4)
+- **Final code:** revised and unified based on Walter's and Miguel's first versions; one notebook that recalculates every number in the presentation from the raw data
+- **Storyline and structure of the presentation:** main question, two sub-questions, answer, recommendation
+- **Design:** designed and built all slides, charts and animations; the team adopted this style for the whole presentation
+- **Recommendation with example calculation:** €105,000 per percentage point, 4.5% buffer, shifting the discount
+- **Preparing for questions:** collected and prioritised likely questions, built the appendix with a linked overview
+
+Walter did the first analyses of revenue and discounts and made the broken price formats in the catalogue visible. We agreed on the cleaning rules together.
+
+#### Presentation
+
+| | Part of the presentation |
 |---|---|
-| **Walter** | Data basis, share of discounted items, monthly trend, Macs |
-| **Miguel** | Brand distribution, price classes, Apple vs. other brands |
-| **Tim** | Opening and agenda, interim conclusions, answer, recommendation, example calculation, appendix |
+| Walter | Data basis, share of discounted items, monthly trend, Macs |
+| Miguel | Brand distribution, price classes, Apple vs. other brands |
+| Tim | Opening and agenda, interim conclusions, answer, recommendation, appendix |
 
-We agreed on the data cleaning rules together as a team.
-
-**My tasks:**
-- Concept and storyline: main question, two sub-questions, answer, recommendation
-- Design and production of the entire presentation: slides, all charts and animations
-- Recommendation with example calculation (€105,000 per percentage point, 4.5% buffer, shifting the discount)
-- Preparing for questions: collected and prioritised likely questions, built appendix A1 to A7 with a linked overview
-- Final notebook: revised and unified the code based on Walter's and Miguel's first versions
-
-**How I worked:** code written with AI assistance; question, analysis, selection, design and review by me.
+The presentation was rated the best in the course; the only follow-up question, how we would test the recommendation, could be answered with a prepared appendix slide.
 
 ### Key Learnings
 
