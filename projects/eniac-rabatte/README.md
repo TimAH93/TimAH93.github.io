@@ -12,6 +12,10 @@ A data-driven answer for the CEO: Python → charts → presentation → recomme
 ![JavaScript](https://img.shields.io/badge/JavaScript-pptxgenjs-E15759)
 ![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-E15759)
 
+[![The presentation at a glance](video/teaser_en.gif)](video/Eniac_Presentation_Video_EN.mp4)
+
+*The presentation at a glance, at double speed. Click to open the full video (2:30 minutes, no sound); the slides are also available [as a PDF](presentation/Eniac_CEO_Presentation_EN.pdf).*
+
 [Project](#project) · [Question](#question) · [Key Numbers](#key-numbers) · [Approach](#approach) · [Findings](#findings) · [Recommendation](#recommendation) · [My Contribution](#my-contribution) · [Files](#files) · [Team](#team)
 
 ---
@@ -327,6 +331,7 @@ The presentation was rated the best in the course; the only follow-up question, 
 |---|---|
 | [`presentation/Eniac_CEO_Presentation_EN.pdf`](presentation/Eniac_CEO_Presentation_EN.pdf) | Presentation with appendix (English) |
 | [`presentation/Eniac_CEO_Praesentation.pdf`](presentation/Eniac_CEO_Praesentation.pdf) | Original German presentation |
+| [`video/Eniac_Presentation_Video_EN.mp4`](video/Eniac_Presentation_Video_EN.mp4) | Video of the presentation (2:30 minutes, no sound) |
 | [`code/analyse/Eniac_Rabattanalyse.ipynb`](code/analyse/Eniac_Rabattanalyse.ipynb) | Final notebook (German): cleaning, both sub-questions, recommendation, appendix and check against the slides |
 | [`code/`](code/) | Further scripts: charts and animations, slide builder, video, English version (overview in [`CODE.md`](code/CODE.md), German) |
 | [`images/`](images/) | Charts on this page |

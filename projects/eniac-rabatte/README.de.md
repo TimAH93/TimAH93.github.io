@@ -12,6 +12,10 @@ Eine datengestützte Antwort für den CEO: Python → Diagramme → Präsentatio
 ![JavaScript](https://img.shields.io/badge/JavaScript-pptxgenjs-E15759)
 ![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-E15759)
 
+[![Die Präsentation im Schnelldurchlauf](video/teaser_de.gif)](video/Eniac_Praesentation_Video.mp4)
+
+*Die Präsentation im Schnelldurchlauf, doppelte Geschwindigkeit. Ein Klick öffnet das vollständige Video (2:24 Minuten, ohne Ton); die Folien gibt es auch [als PDF](presentation/Eniac_CEO_Praesentation.pdf).*
+
 [Projekt](#projekt) · [Frage](#frage) · [Kernzahlen](#kernzahlen) · [Vorgehen](#vorgehen) · [Ergebnisse](#ergebnisse) · [Empfehlung](#empfehlung) · [Mein Beitrag](#mein-beitrag) · [Dateien](#dateien) · [Team](#team)
 
 ---
@@ -327,6 +331,7 @@ Die Präsentation wurde im Kurs als beste bewertet; die einzige Rückfrage, wie 
 |---|---|
 | [`presentation/Eniac_CEO_Praesentation.pdf`](presentation/Eniac_CEO_Praesentation.pdf) | Präsentation mit Anhang (Deutsch) |
 | [`presentation/Eniac_CEO_Presentation_EN.pdf`](presentation/Eniac_CEO_Presentation_EN.pdf) | Englische Fassung der Präsentation |
+| [`video/Eniac_Praesentation_Video.mp4`](video/Eniac_Praesentation_Video.mp4) | Video der Präsentation (2:24 Minuten, ohne Ton) |
 | [`code/analyse/Eniac_Rabattanalyse.ipynb`](code/analyse/Eniac_Rabattanalyse.ipynb) | Finales Notebook: Bereinigung, beide Teilfragen, Empfehlung, Anhang und Abgleich mit den Folien |
 | [`code/`](code/) | Weitere Skripte: Diagramme und Animationen, Folien-Builder, Video, englische Fassung (Übersicht in [`CODE.md`](code/CODE.md)) |
 | [`images/`](images/) | Diagramme dieser Seite |
