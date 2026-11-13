@@ -26,8 +26,6 @@ Eniac is an online retailer of Apple products and accessories in Spain. Almost e
 
 > Group project in the "Data Analysis and AI" training at WBS Coding School, presented on 13 November 2026. Eniac is a case study provided by the course.
 
-**Outcome:** The instructors rated our presentation the best in the course. The only follow-up question on content, how we would test the recommendation, was fully answered by a prepared appendix slide (calculation and test plan).
-
 ## Question
 
 > **Do Eniac's discounts pay off?**
@@ -317,7 +315,7 @@ Walter did the first analyses of revenue and discounts and made the broken price
 | Miguel | Brand distribution, price classes, Apple vs. other brands |
 | Tim | Opening and agenda, interim conclusions, answer, recommendation, appendix |
 
-The presentation was rated the best in the course; the only follow-up question, how we would test the recommendation, could be answered with a prepared appendix slide.
+The only follow-up question on content after the presentation, how we would test the recommendation, could be answered with a prepared appendix slide (calculation and test plan).
 
 ### Key Learnings
 

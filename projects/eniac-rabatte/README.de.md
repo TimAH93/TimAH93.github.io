@@ -26,8 +26,6 @@ Eniac ist ein Onlinehändler für Apple-Produkte und Zubehör in Spanien. Fast a
 
 > Gruppenprojekt der Weiterbildung „Data Analysis and AI“ der WBS Coding School, präsentiert am 13. November 2026. Eniac ist ein Fallbeispiel des Kurses.
 
-**Ergebnis:** Die Instructor bewerteten unsere Präsentation als die beste des Kurses. Die einzige inhaltliche Rückfrage, wie wir die Empfehlung testen würden, konnten wir mit einer vorbereiteten Anhangfolie (Rechenweg und Testplan) vollständig beantworten.
-
 ## Frage
 
 > **Lohnen sich Eniacs Rabatte?**
@@ -317,7 +315,7 @@ Walter hat die ersten Analysen zu Umsatz und Rabatten gemacht und die fehlerhaft
 | Miguel | Markenverteilung, Preisklassen, Apple gegen andere Marken |
 | Tim | Einstieg und Agenda, Zwischenfazits, Antwort, Empfehlung, Anhang |
 
-Die Präsentation wurde im Kurs als beste bewertet; die einzige Rückfrage, wie wir die Empfehlung testen würden, ließ sich mit einer vorbereiteten Anhangfolie beantworten.
+Die einzige inhaltliche Rückfrage nach der Präsentation, wie wir die Empfehlung testen würden, ließ sich mit einer vorbereiteten Anhangfolie (Rechenweg und Testplan) beantworten.
 
 ### Wichtigste Erkenntnisse
 
